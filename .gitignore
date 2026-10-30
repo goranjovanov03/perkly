@@ -1,0 +1,8 @@
+node_modules
+dist
+build
+.env
+backend/vendor
+backend/storage/*.key
+mobile/.expo
+*.log

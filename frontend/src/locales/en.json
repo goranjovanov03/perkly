@@ -1,0 +1,14 @@
+{
+  "health": {
+    "title": "System Health",
+    "status": "Status",
+    "ok": "OK",
+    "error": "Error",
+    "loading": "Loading..."
+  },
+  "language": {
+    "switch": "Language",
+    "mk": "Македонски",
+    "en": "English"
+  }
+}
