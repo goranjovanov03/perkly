@@ -21,6 +21,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** User login */
+        post: operations["login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** User logout */
+        post: operations["logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get authenticated user */
+        get: operations["getMe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -122,6 +173,24 @@ export interface components {
                 "application/json": components["schemas"]["ValidationErrorResponse"];
             };
         };
+        /** @description Too many requests */
+        TooManyRequests: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "error": {
+                 *         "code": "TOO_MANY_REQUESTS",
+                 *         "message": "Too many requests.",
+                 *         "request_id": "550e8400-e29b-41d4-a716-446655440000"
+                 *       }
+                 *     }
+                 */
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
         /** @description Internal server error */
         ServerError: {
             headers: {
@@ -173,6 +242,124 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             422: components["responses"]["ValidationError"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: email */
+                    email: string;
+                    /** Format: password */
+                    password: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Login successful */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "user": {
+                     *         "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
+                     *         "name": "John Doe",
+                     *         "email": "john@example.com"
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        user: {
+                            /** Format: uuid */
+                            id: string;
+                            name: string;
+                            /** Format: email */
+                            email: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            422: components["responses"]["ValidationError"];
+            429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Logout successful */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "message": "Logged out"
+                     *     }
+                     */
+                    "application/json": {
+                        message: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    getMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Authenticated user */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "user": {
+                     *         "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
+                     *         "name": "John Doe",
+                     *         "email": "john@example.com"
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        user: {
+                            /** Format: uuid */
+                            id: string;
+                            name: string;
+                            /** Format: email */
+                            email: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
             500: components["responses"]["ServerError"];
         };
     };

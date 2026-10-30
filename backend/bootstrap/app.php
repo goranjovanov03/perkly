@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,7 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->api(prepend: [\App\Http\Middleware\RequestIdMiddleware::class]);
+        $middleware->api(prepend: [
+            \App\Http\Middleware\RequestIdMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
@@ -62,6 +65,16 @@ return Application::configure(basePath: dirname(__DIR__))
                         'request_id' => $requestId,
                     ],
                 ], 403);
+            }
+
+            if ($e instanceof TooManyRequestsHttpException) {
+                return response()->json([
+                    'error' => [
+                        'code' => 'TOO_MANY_REQUESTS',
+                        'message' => 'Too many requests.',
+                        'request_id' => $requestId,
+                    ],
+                ], 429);
             }
 
             if ($e instanceof NotFoundHttpException) {
