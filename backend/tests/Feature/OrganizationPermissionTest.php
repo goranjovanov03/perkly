@@ -6,7 +6,6 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Organization;
 use App\Models\OrganizationMembership;
-use Spatie\Permission\Models\Role;
 
 class OrganizationPermissionTest extends TestCase
 {
@@ -18,7 +17,8 @@ class OrganizationPermissionTest extends TestCase
 
     protected function assignRoleToUserForOrganization(User $user, string $roleName, Organization $organization): void
     {
-        $role = Role::where('name', $roleName)->where('guard_name', 'web')->first();
+        $Role = app(config('permission.models.role'));
+        $role = $Role::where('name', $roleName)->where('guard_name', 'web')->first();
         $user->roles()->attach($role, ['team_id' => $organization->id]);
     }
 

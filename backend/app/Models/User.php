@@ -19,6 +19,9 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasApiTokens, HasRoles;
 
+    protected $keyType = 'string';
+    public $incrementing = false;
+
     protected function casts(): array
     {
         return [
