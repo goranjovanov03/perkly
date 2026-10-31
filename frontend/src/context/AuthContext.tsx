@@ -1,10 +1,9 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getMe, getOrganizations, logout, logoutAll, login as loginApi } from '../services/auth';
 import type { AuthState, LoginCredentials, ApiError } from '../types/auth';
 import { ORGANIZATION_STORAGE_KEY, SESSION_EXPIRED_KEY } from '../types/auth';
 import { getErrorMessage } from '../services/auth';
-import { useTranslation } from 'react-i18next';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<{ error?: string; fieldErrors?: Record<string, string[]> }>;
@@ -12,13 +11,11 @@ interface AuthContextType extends AuthState {
   logoutAll: () => Promise<void>;
   selectOrganization: (orgId: string) => void;
   clearSessionExpired: () => void;
-  checkAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | null>(() => {
     return localStorage.getItem(ORGANIZATION_STORAGE_KEY);
@@ -26,32 +23,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [sessionExpired, setSessionExpired] = useState<boolean>(() => {
     return localStorage.getItem(SESSION_EXPIRED_KEY) === 'true';
   });
-  const [networkError, setNetworkError] = useState<boolean>(false);
-  const [authError, setAuthError] = useState<string | null>(null);
 
   const { data: meData, error: meError, isLoading: meLoading, refetch: refetchMe } = useQuery({
     queryKey: ['me'],
-    queryFn: async () => {
-      try {
-        setNetworkError(false);
-        setAuthError(null);
-        return await getMe();
-      } catch (error) {
-        if (error instanceof TypeError && error.message.includes('fetch')) {
-          setNetworkError(true);
-          setAuthError(t('common.networkError'));
-          throw error;
-        }
-        if (error && typeof error === 'object' && 'error' in error) {
-          const apiError = error as ApiError;
-          if (apiError.error?.code === 'UNAUTHENTICATED') {
-            throw error;
-          }
-        }
-        setAuthError(t('common.networkError'));
-        throw error;
-      }
-    },
+    queryFn: getMe,
     retry: false,
     staleTime: Infinity,
   });
@@ -102,10 +77,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (storedOrgId && organizations.some(org => org.id === storedOrgId)) {
         setSelectedOrganizationId(storedOrgId);
-      } else if (organizations.length > 0 && !selectedOrganizationId) {
       }
     }
-  }, [orgsData, selectedOrganizationId]);
+  }, [orgsData]);
+
+  useEffect(() => {
+    if (meError) {
+      const errorCode = meError && typeof meError === 'object' && 'error' in meError
+        ? (meError as ApiError).error?.code
+        : null;
+      
+      if (errorCode === 'UNAUTHENTICATED') {
+        setSessionExpired(true);
+        localStorage.setItem(SESSION_EXPIRED_KEY, 'true');
+      }
+    }
+  }, [meError]);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     try {
@@ -121,14 +108,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [loginMutation]);
 
-  const handleLogout = useCallback(async () => {
-    await logoutMutation.mutateAsync();
-  }, [logoutMutation]);
-
-  const handleLogoutAll = useCallback(async () => {
-    await logoutAllMutation.mutateAsync();
-  }, [logoutAllMutation]);
-
   const selectOrganization = useCallback((orgId: string) => {
     setSelectedOrganizationId(orgId);
     localStorage.setItem(ORGANIZATION_STORAGE_KEY, orgId);
@@ -139,48 +118,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(SESSION_EXPIRED_KEY);
   }, []);
 
-  const checkAuth = useCallback(async () => {
-    await refetchMe();
-  }, [refetchMe]);
-
   const user = meData?.user || null;
   const organizations = orgsData?.organizations || [];
   const isAuthenticated = !!user && !meError;
   const isLoading = meLoading || (isAuthenticated && orgsLoading);
 
-  if (meError) {
-    const errorCode = meError && typeof meError === 'object' && 'error' in meError
-      ? (meError as ApiError).error?.code
-      : null;
-    
-    if (errorCode === 'UNAUTHENTICATED') {
-      setSessionExpired(true);
-      localStorage.setItem(SESSION_EXPIRED_KEY, 'true');
-    }
-  }
-
-  if (networkError && !isAuthenticated) {
-    setSessionExpired(true);
-    localStorage.setItem(SESSION_EXPIRED_KEY, 'true');
-  }
+  const value = useMemo(() => ({
+    user,
+    organizations,
+    selectedOrganizationId,
+    isAuthenticated,
+    isLoading,
+    sessionExpired,
+    login,
+    logout: logoutMutation.mutateAsync,
+    logoutAll: logoutAllMutation.mutateAsync,
+    selectOrganization,
+    clearSessionExpired,
+  }), [
+    user,
+    organizations,
+    selectedOrganizationId,
+    isAuthenticated,
+    isLoading,
+    sessionExpired,
+    loginMutation,
+    logoutMutation,
+    logoutAllMutation,
+  ]);
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      organizations,
-      selectedOrganizationId,
-      isAuthenticated,
-      isLoading,
-      sessionExpired,
-      networkError,
-      authError,
-      login,
-      logout: handleLogout,
-      logoutAll: handleLogoutAll,
-      selectOrganization,
-      clearSessionExpired,
-      checkAuth,
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
