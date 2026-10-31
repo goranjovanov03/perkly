@@ -18,7 +18,7 @@ class OrganizationPermissionTest extends TestCase
     protected function assignRoleToUserForOrganization(User $user, string $roleName, Organization $organization): void
     {
         $Role = app(config('permission.models.role'));
-        $role = $Role::where('name', $roleName)->where('guard_name', 'web')->first();
+        $role = $Role::where('name', $roleName)->where('guard_name', 'sanctum')->first();
         $user->roles()->attach($role, ['team_id' => $organization->id]);
     }
 

@@ -4,6 +4,7 @@ import { getMe, getOrganizations, logout, logoutAll, login as loginApi } from '.
 import type { AuthState, LoginCredentials, ApiError } from '../types/auth';
 import { ORGANIZATION_STORAGE_KEY, SESSION_EXPIRED_KEY } from '../types/auth';
 import { getErrorMessage } from '../services/auth';
+import { useTranslation } from 'react-i18next';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<{ error?: string; fieldErrors?: Record<string, string[]> }>;
@@ -17,6 +18,7 @@ interface AuthContextType extends AuthState {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | null>(() => {
     return localStorage.getItem(ORGANIZATION_STORAGE_KEY);
@@ -24,10 +26,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [sessionExpired, setSessionExpired] = useState<boolean>(() => {
     return localStorage.getItem(SESSION_EXPIRED_KEY) === 'true';
   });
+  const [networkError, setNetworkError] = useState<boolean>(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const { data: meData, error: meError, isLoading: meLoading, refetch: refetchMe } = useQuery({
     queryKey: ['me'],
-    queryFn: getMe,
+    queryFn: async () => {
+      try {
+        setNetworkError(false);
+        setAuthError(null);
+        return await getMe();
+      } catch (error) {
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+          setNetworkError(true);
+          setAuthError(t('common.networkError'));
+          throw error;
+        }
+        if (error && typeof error === 'object' && 'error' in error) {
+          const apiError = error as ApiError;
+          if (apiError.error?.code === 'UNAUTHENTICATED') {
+            throw error;
+          }
+        }
+        setAuthError(t('common.networkError'));
+        throw error;
+      }
+    },
     retry: false,
     staleTime: Infinity,
   });
@@ -79,7 +103,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (storedOrgId && organizations.some(org => org.id === storedOrgId)) {
         setSelectedOrganizationId(storedOrgId);
       } else if (organizations.length > 0 && !selectedOrganizationId) {
-        // Don't auto-select if there are multiple organizations
       }
     }
   }, [orgsData, selectedOrganizationId]);
@@ -136,6 +159,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  if (networkError && !isAuthenticated) {
+    setSessionExpired(true);
+    localStorage.setItem(SESSION_EXPIRED_KEY, 'true');
+  }
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -144,6 +172,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated,
       isLoading,
       sessionExpired,
+      networkError,
+      authError,
       login,
       logout: handleLogout,
       logoutAll: handleLogoutAll,

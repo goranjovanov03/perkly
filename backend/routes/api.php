@@ -16,7 +16,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/auth/reset-password', [\App\Http\Controllers\AuthController::class, 'resetPassword']);
     });
 
-    Route::middleware(['auth:sanctum', \Illuminate\Session\Middleware\StartSession::class])->group(function () {
+    Route::middleware([\App\Http\Middleware\AuthenticateApi::class, \Illuminate\Session\Middleware\StartSession::class])->group(function () {
         Route::post('/auth/logout', [\App\Http\Controllers\AuthController::class, 'logout']);
         Route::post('/auth/logout-all', [\App\Http\Controllers\AuthController::class, 'logoutAll']);
         Route::get('/me', [\App\Http\Controllers\AuthController::class, 'me']);
@@ -28,11 +28,11 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/token', [\App\Http\Controllers\MobileAuthController::class, 'issueToken'])
         ->middleware(['throttle:5,1', \Illuminate\Session\Middleware\StartSession::class]);
 
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(\App\Http\Middleware\AuthenticateApi::class)->group(function () {
         Route::delete('/auth/token', [\App\Http\Controllers\MobileAuthController::class, 'revokeToken']);
     });
 
-    Route::middleware(['auth:sanctum', \App\Http\Middleware\CurrentOrganizationMiddleware::class])
+    Route::middleware([\App\Http\Middleware\AuthenticateApi::class, \App\Http\Middleware\CurrentOrganizationMiddleware::class])
         ->prefix('org')
         ->group(function () {
             Route::get('/current', function (Request $request) {

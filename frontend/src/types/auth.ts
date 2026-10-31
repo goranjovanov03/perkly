@@ -43,6 +43,8 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   sessionExpired: boolean;
+  networkError: boolean;
+  authError: string | null;
 }
 
 export const ORGANIZATION_STORAGE_KEY = 'selectedOrganizationId';
