@@ -10,5 +10,27 @@
     "switch": "Јазик",
     "mk": "Македонски",
     "en": "English"
+  },
+  "auth": {
+    "login": "Најави се",
+    "email": "Е-пошта",
+    "password": "Лозинка",
+    "deviceName": "Име на уред",
+    "loggingIn": "Најавување...",
+    "loginError": "Грешка при најавување",
+    "invalidCredentials": "Невалидни}kредиенцијали",
+    "networkError": "Нема конекција со серверот",
+    "retry": "Обиди се повторно",
+    "sessionExpired": "Сесијата истече",
+    "logout": "Одјави се",
+    "logoutAll": "Одјави се од сите уреди",
+    "loggingOut": "Одјавување...",
+    "selectOrganization": "Избери организација",
+    "organization": "Организација",
+    "organizations": "Организации",
+    "welcome": "Добредојдовте",
+    "currentOrg": "Моментална организација",
+    "switchOrg": "Смени организација",
+    "confirmLogoutAll": "Дали сте сигурни дека сакате да се одјавите од сите уреди?"
   }
 }
