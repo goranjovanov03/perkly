@@ -127,7 +127,8 @@ class MobileAuthTest extends TestCase
             'Authorization' => 'Bearer ' . $token,
         ])->deleteJson('/api/v1/auth/token');
 
-        // After revocation, the token should not work
+        $this->app['auth']->forgetGuards();
+
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $token,
         ])->getJson('/api/v1/me');
