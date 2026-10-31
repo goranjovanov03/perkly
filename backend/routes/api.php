@@ -16,6 +16,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth:sanctum', \Illuminate\Session\Middleware\StartSession::class])->group(function () {
         Route::post('/auth/logout', [\App\Http\Controllers\AuthController::class, 'logout']);
         Route::get('/me', [\App\Http\Controllers\AuthController::class, 'me']);
+        Route::patch('/me/password', [\App\Http\Controllers\AuthController::class, 'updatePassword']);
     });
 
     Route::post('/auth/token', [\App\Http\Controllers\MobileAuthController::class, 'issueToken'])

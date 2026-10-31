@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\AuthenticationException;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
@@ -58,5 +60,42 @@ class AuthController extends Controller
                 'email' => $request->user()->email,
             ],
         ]);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|confirmed|min:8',
+        ]);
+
+        $user = $request->user();
+
+        if (! Hash::check($request->current_password, $user->password)) {
+            $requestId = $request->header('X-Request-Id') ?? (string) \Illuminate\Support\Str::uuid();
+            return response()->json([
+                'error' => [
+                    'code' => 'VALIDATION_ERROR',
+                    'message' => 'The current password is incorrect.',
+                    'request_id' => $requestId,
+                    'fields' => [
+                        'current_password' => ['The current password is incorrect.'],
+                    ],
+                ],
+            ], 422);
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        PersonalAccessToken::where('tokenable_id', $user->id)->delete();
+
+        $currentSessionId = $request->session()->getId();
+        \Illuminate\Support\Facades\DB::table('sessions')
+            ->where('user_id', $user->id)
+            ->where('id', '!=', $currentSessionId)
+            ->delete();
+
+        return response()->json(['message' => 'Password updated successfully']);
     }
 }
