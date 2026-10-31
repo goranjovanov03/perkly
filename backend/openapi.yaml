@@ -192,6 +192,116 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '500':
           $ref: '#/components/responses/ServerError'
+    patch:
+      summary: Update current organization
+      operationId: updateCurrentOrganization
+      security:
+        - sanctum: []
+      parameters:
+        - name: X-Organization-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Organization ID
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                slug:
+                  type: string
+                  maxLength: 255
+      responses:
+        '200':
+          description: Updated organization
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organization:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: ulid
+                      name:
+                        type: string
+                      slug:
+                        type: string
+                    required: [id, name, slug]
+                required: [organization]
+              example:
+                organization:
+                  id: "01HX7Z9K9V9V9V9V9V9V9V9V9V"
+                  name: "Acme Inc"
+                  slug: "acme-inc"
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v1/org/members:
+    get:
+      summary: List organization members
+      operationId: listOrganizationMembers
+      security:
+        - sanctum: []
+      parameters:
+        - name: X-Organization-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Organization ID
+      responses:
+        '200':
+          description: List of members
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  members:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: ulid
+                        name:
+                          type: string
+                        email:
+                          type: string
+                          format: email
+                        role:
+                          type: string
+                      required: [id, name, email, role]
+                required: [members]
+              example:
+                members:
+                  - id: "01HX7Z9K9V9V9V9V9V9V9V9V9V"
+                    name: "John Doe"
+                    email: "john@example.com"
+                    role: "owner"
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
 components:
   securitySchemes:
     sanctum:
@@ -302,19 +412,3 @@ components:
                       type: string
                   required: [fields]
               required: [error]
-    ValidationErrorResponse:
-      allOf:
-        - $ref: '#/components/schemas/ErrorResponse'
-        - type: object
-          properties:
-            error:
-              type: object
-              properties:
-                fields:
-                  type: object
-                  additionalProperties:
-                    type: array
-                    items:
-                      type: string
-              required: [fields]
-          required: [error]

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Models\Organization;
 use App\Models\OrganizationMembership;
+use Spatie\Permission\PermissionRegistrar;
 
 class CurrentOrganizationMiddleware
 {
@@ -38,6 +39,8 @@ class CurrentOrganizationMiddleware
         if (! $membership) {
             return $this->forbidden($request);
         }
+
+        app(PermissionRegistrar::class)->setPermissionsTeamId($organization->id);
 
         $request->merge(['current_organization' => $organization]);
         $request->attributes->set('current_organization', $organization);
