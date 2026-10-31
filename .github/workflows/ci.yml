@@ -11,7 +11,7 @@ jobs:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_DB: perkly
+          POSTGRES_DB: perkly_test
           POSTGRES_USER: perkly
           POSTGRES_PASSWORD: perkly_dev_only
         ports:
@@ -48,7 +48,7 @@ jobs:
           DB_CONNECTION: pgsql
           DB_HOST: 127.0.0.1
           DB_PORT: 5432
-          DB_DATABASE: perkly
+          DB_DATABASE: perkly_test
           DB_USERNAME: perkly
           DB_PASSWORD: perkly_dev_only
           REDIS_CLIENT: predis
