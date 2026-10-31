@@ -10,5 +10,67 @@
     "switch": "Language",
     "mk": "Македонски",
     "en": "English"
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Log in",
+      "forgotPassword": "Forgot password?",
+      "error": {
+        "title": "Login Error",
+        "invalidCredentials": "Invalid credentials.",
+        "unauthenticated": "Unauthenticated."
+      }
+    },
+    "logout": {
+      "button": "Logout",
+      "logoutAll": "Logout from all devices"
+    },
+    "forgotPassword": {
+      "title": "Forgot Password",
+      "description": "Enter your email to receive a password reset link.",
+      "email": "Email",
+      "submit": "Send Reset Link",
+      "backToLogin": "Back to Login",
+      "success": "If the email exists, a reset link has been sent.",
+      "error": {
+        "title": "Error",
+        "rateLimited": "Too many requests. Please try again in {{seconds}} seconds."
+      }
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "description": "Enter your new password.",
+      "password": "New Password",
+      "passwordConfirmation": "Confirm New Password",
+      "submit": "Reset Password",
+      "backToLogin": "Back to Login",
+      "success": "Password has been reset.",
+      "error": {
+        "title": "Error",
+        "invalidToken": "Invalid or expired reset token.",
+        "passwordMismatch": "Passwords do not match."
+      }
+    },
+    "organizationPicker": {
+      "title": "Select Organization",
+      "description": "You have access to multiple organizations. Please select one.",
+      "select": "Select",
+      "loading": "Loading organizations..."
+    },
+    "sessionExpired": "Session expired. Please log in again."
+  },
+  "home": {
+    "welcome": "Welcome, {{name}}",
+    "currentOrganization": "Current organization: {{orgName}}",
+    "noOrganization": "No organization selected"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel"
   }
 }

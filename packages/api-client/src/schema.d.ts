@@ -55,6 +55,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/auth/logout-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Logout from all devices */
+        post: operations["logoutAll"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/forgot-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Request password reset link */
+        post: operations["forgotPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reset password with token */
+        post: operations["resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/me": {
         parameters: {
             query?: never;
@@ -64,6 +115,76 @@ export interface paths {
         };
         /** Get authenticated user */
         get: operations["getMe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change password */
+        patch: operations["updatePassword"];
+        trace?: never;
+    };
+    "/v1/me/organizations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get user organizations with active membership */
+        get: operations["getUserOrganizations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/onboarding/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete user onboarding */
+        post: operations["completeOnboarding"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/org/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get current organization */
+        get: operations["getCurrentOrganization"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update current organization */
+        patch: operations["updateCurrentOrganization"];
+        trace?: never;
+    };
+    "/v1/org/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List organization members */
+        get: operations["listOrganizationMembers"];
         put?: never;
         post?: never;
         delete?: never;
@@ -85,8 +206,8 @@ export interface components {
             };
         };
         ValidationErrorResponse: components["schemas"]["ErrorResponse"] & {
-            error: {
-                fields: {
+            error?: {
+                fields?: {
                     [key: string]: string[];
                 };
             };
@@ -324,6 +445,113 @@ export interface operations {
             500: components["responses"]["ServerError"];
         };
     };
+    logoutAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Logout from all devices successful */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "message": "Logged out from all devices"
+                     *     }
+                     */
+                    "application/json": {
+                        message: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    forgotPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: email */
+                    email: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Password reset email sent (always returns 202 regardless of email existence) */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "message": "If the email exists, a reset link has been sent."
+                     *     }
+                     */
+                    "application/json": {
+                        message: string;
+                    };
+                };
+            };
+            422: components["responses"]["ValidationError"];
+            429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    resetPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    token: string;
+                    /** Format: email */
+                    email: string;
+                    /** Format: password */
+                    password: string;
+                    /** Format: password */
+                    password_confirmation: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Password reset successful */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "message": "Password has been reset."
+                     *     }
+                     */
+                    "application/json": {
+                        message: string;
+                    };
+                };
+            };
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["ServerError"];
+        };
+    };
     getMe: {
         parameters: {
             query?: never;
@@ -344,7 +572,8 @@ export interface operations {
                      *       "user": {
                      *         "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
                      *         "name": "John Doe",
-                     *         "email": "john@example.com"
+                     *         "email": "john@example.com",
+                     *         "onboarded_at": "2026-10-31T12:00:00.000000Z"
                      *       }
                      *     }
                      */
@@ -355,11 +584,275 @@ export interface operations {
                             name: string;
                             /** Format: email */
                             email: string;
+                            /** Format: date-time */
+                            onboarded_at?: string | null;
                         };
                     };
                 };
             };
             401: components["responses"]["Unauthenticated"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    updatePassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: password */
+                    current_password: string;
+                    /** Format: password */
+                    password: string;
+                    /** Format: password */
+                    password_confirmation: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Password updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "message": "Password updated successfully"
+                     *     }
+                     */
+                    "application/json": {
+                        message: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    getUserOrganizations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of organizations where user has active membership */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "organizations": [
+                     *         {
+                     *           "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
+                     *           "name": "Acme Inc",
+                     *           "slug": "acme-inc"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": {
+                        organizations: {
+                            /** Format: ulid */
+                            id: string;
+                            name: string;
+                            slug: string;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    completeOnboarding: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Onboarding completed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "user": {
+                     *         "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
+                     *         "name": "John Doe",
+                     *         "email": "john@example.com",
+                     *         "onboarded_at": "2026-10-31T12:00:00.000000Z"
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        user: {
+                            /** Format: uuid */
+                            id: string;
+                            name: string;
+                            /** Format: email */
+                            email: string;
+                            /** Format: date-time */
+                            onboarded_at: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    getCurrentOrganization: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Organization ID */
+                "X-Organization-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current organization */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "organization": {
+                     *         "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
+                     *         "name": "Acme Inc",
+                     *         "slug": "acme-inc"
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        organization: {
+                            /** Format: ulid */
+                            id: string;
+                            name: string;
+                            slug: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    updateCurrentOrganization: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Organization ID */
+                "X-Organization-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    name?: string;
+                    slug?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Updated organization */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "organization": {
+                     *         "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
+                     *         "name": "Acme Inc",
+                     *         "slug": "acme-inc"
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        organization: {
+                            /** Format: ulid */
+                            id: string;
+                            name: string;
+                            slug: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    listOrganizationMembers: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Organization ID */
+                "X-Organization-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of members */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "members": [
+                     *         {
+                     *           "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
+                     *           "name": "John Doe",
+                     *           "email": "john@example.com",
+                     *           "role": "owner"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": {
+                        members: {
+                            /** Format: ulid */
+                            id: string;
+                            name: string;
+                            /** Format: email */
+                            email: string;
+                            role: string;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
             500: components["responses"]["ServerError"];
         };
     };
