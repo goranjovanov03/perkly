@@ -23,10 +23,8 @@ class Permission extends SpatiePermission
     protected static function booted(): void
     {
         static::creating(function ($permission) {
-            dump('Permission creating event fired', $permission->id);
             if (empty($permission->id)) {
                 $permission->id = (string) Str::ulid();
-                dump('Permission ID set', $permission->id);
             }
         });
     }

@@ -18,7 +18,6 @@ class DemoSeeder extends Seeder
     {
         $this->call(RolePermissionSeeder::class);
 
-        dump('Creating user');
         $user = User::firstOrCreate(
             ['email' => 'demo@perkly.test'],
             [
@@ -28,7 +27,6 @@ class DemoSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
-        dump('User created', $user->id);
 
         $person = Person::firstOrCreate(
             ['email' => 'demo@perkly.test'],
@@ -87,6 +85,5 @@ class DemoSeeder extends Seeder
         $user->roles()->attach($memberRole, ['team_id' => $org2->id]);
 
         app(PermissionRegistrar::class)->setPermissionsTeamId(null);
-        dump('DemoSeeder completed');
     }
 }

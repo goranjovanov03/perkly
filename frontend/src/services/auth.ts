@@ -1,6 +1,7 @@
-import { apiClient } from '../lib/api';
+import { apiClient, apiBaseUrl, initCsrfCookie } from '../lib/api';
 import type { LoginCredentials, ForgotPasswordData, ResetPasswordData, User, Organization, ApiError } from '../types/auth';
 import { ORGANIZATION_STORAGE_KEY } from '../types/auth';
+import { login as apiLogin, logout as apiLogout, logoutAll as apiLogoutAll, forgotPassword as apiForgotPassword, resetPassword as apiResetPassword } from '@perkly/api-client';
 
 function getErrorMessage(error: unknown, defaultMessage: string): string {
   if (error && typeof error === 'object' && 'error' in error) {
@@ -27,49 +28,19 @@ function getAuthHeaders(): Record<string, string> {
   return headers;
 }
 
-export async function getCsrfCookie(): Promise<void> {
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8001/api';
-  const response = await fetch(`${baseUrl.replace('/api', '')}/sanctum/csrf-cookie`, {
-    credentials: 'include',
-  });
-  if (!response.ok) {
-    throw new Error('Failed to get CSRF cookie');
-  }
-}
-
 export async function login(credentials: LoginCredentials): Promise<{ user: User }> {
-  await getCsrfCookie();
+  await initCsrfCookie();
   
-  const response = await apiClient.POST('/v1/auth/login', {
-    body: credentials,
-    credentials: 'include',
-  });
-
-  if (response.error) {
-    throw response.error;
-  }
-
-  return response.data as { user: User };
+  const response = await apiLogin(apiClient, apiBaseUrl, credentials.email, credentials.password);
+  return response;
 }
 
 export async function logout(): Promise<void> {
-  const response = await apiClient.POST('/v1/auth/logout', {
-    credentials: 'include',
-  });
-
-  if (response.error) {
-    throw response.error;
-  }
+  await apiLogout(apiClient, apiBaseUrl);
 }
 
 export async function logoutAll(): Promise<void> {
-  const response = await apiClient.POST('/v1/auth/logout-all', {
-    credentials: 'include',
-  });
-
-  if (response.error) {
-    throw response.error;
-  }
+  await apiLogoutAll(apiClient, apiBaseUrl);
 }
 
 export async function getMe(): Promise<{ user: User }> {
@@ -111,29 +82,15 @@ export async function completeOnboarding(): Promise<{ user: User }> {
 }
 
 export async function forgotPassword(data: ForgotPasswordData): Promise<{ message: string }> {
-  const response = await apiClient.POST('/v1/auth/forgot-password', {
-    body: data,
-    credentials: 'include',
-  });
-
-  if (response.error) {
-    throw response.error;
-  }
-
-  return response.data as { message: string };
+  await initCsrfCookie();
+  const response = await apiForgotPassword(apiClient, apiBaseUrl, data.email);
+  return response;
 }
 
 export async function resetPassword(data: ResetPasswordData): Promise<{ message: string }> {
-  const response = await apiClient.POST('/v1/auth/reset-password', {
-    body: data,
-    credentials: 'include',
-  });
-
-  if (response.error) {
-    throw response.error;
-  }
-
-  return response.data as { message: string };
+  await initCsrfCookie();
+  const response = await apiResetPassword(apiClient, apiBaseUrl, data.token, data.email, data.password, data.password_confirmation);
+  return response;
 }
 
 export { getErrorMessage, getFieldErrors };

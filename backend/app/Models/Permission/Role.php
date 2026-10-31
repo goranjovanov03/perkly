@@ -23,10 +23,8 @@ class Role extends SpatieRole
     protected static function booted(): void
     {
         static::creating(function ($role) {
-            dump('Role creating event fired', $role->id);
             if (empty($role->id)) {
                 $role->id = (string) Str::ulid();
-                dump('Role ID set', $role->id);
             }
         });
     }
