@@ -147,6 +147,51 @@ paths:
           $ref: '#/components/responses/Unauthenticated'
         '500':
           $ref: '#/components/responses/ServerError'
+  /v1/org/current:
+    get:
+      summary: Get current organization
+      operationId: getCurrentOrganization
+      security:
+        - sanctum: []
+      parameters:
+        - name: X-Organization-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Organization ID
+      responses:
+        '200':
+          description: Current organization
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organization:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: ulid
+                      name:
+                        type: string
+                      slug:
+                        type: string
+                    required: [id, name, slug]
+                required: [organization]
+              example:
+                organization:
+                  id: "01HX7Z9K9V9V9V9V9V9V9V9V9V"
+                  name: "Acme Inc"
+                  slug: "acme-inc"
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
 components:
   securitySchemes:
     sanctum:
@@ -241,6 +286,22 @@ components:
               format: uuid
           required: [code, message, request_id]
       required: [error]
+    ValidationErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          properties:
+            error:
+              type: object
+              properties:
+                fields:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                  required: [fields]
+              required: [error]
     ValidationErrorResponse:
       allOf:
         - $ref: '#/components/schemas/ErrorResponse'
