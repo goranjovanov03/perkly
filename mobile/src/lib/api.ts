@@ -24,20 +24,29 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   return headers;
 }
 
-async function createApiClientInstance(): Promise<{ client: ApiClient; baseUrl: string }> {
-  const { createApiClient } = await import('@perkly/api-client');
-  return createApiClient(baseUrl);
-}
-
 export async function getApiClient(): Promise<{ client: ApiClient; baseUrl: string }> {
   if (!apiClientInstance) {
-    apiClientInstance = await createApiClientInstance();
+    apiClientInstance = createApiClient(baseUrl);
   }
   return apiClientInstance;
 }
 
+const authListeners = new Set<() => void>();
+
+export function subscribeAuthChange(listener: () => void): () => void {
+  authListeners.add(listener);
+  return () => {
+    authListeners.delete(listener);
+  };
+}
+
+function notifyAuthChange(): void {
+  authListeners.forEach((listener) => listener());
+}
+
 export async function saveToken(token: string): Promise<void> {
   await SecureStore.setItemAsync(TOKEN_KEY, token);
+  notifyAuthChange();
 }
 
 export async function getToken(): Promise<string | null> {
@@ -46,6 +55,7 @@ export async function getToken(): Promise<string | null> {
 
 export async function clearToken(): Promise<void> {
   await SecureStore.deleteItemAsync(TOKEN_KEY);
+  notifyAuthChange();
 }
 
 export async function saveOrgId(orgId: string): Promise<void> {

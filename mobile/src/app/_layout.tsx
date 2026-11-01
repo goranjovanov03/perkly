@@ -7,7 +7,7 @@ import { Stack } from 'expo-router';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import i18n, { loadSavedLanguage } from '@/lib/i18n';
-import { getToken, getOrgId, getMe, clearAuth } from '@/lib/api';
+import { getToken, getMe, clearAuth, subscribeAuthChange } from '@/lib/api';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -21,12 +21,14 @@ export default function RootLayout() {
   useEffect(() => {
     loadSavedLanguage();
     checkAuth();
+    return subscribeAuthChange(async () => {
+      setIsAuthenticated(Boolean(await getToken()));
+    });
   }, []);
 
   const checkAuth = async () => {
     const token = await getToken();
-    const orgId = await getOrgId();
-    if (token && orgId) {
+    if (token) {
       try {
         await getMe();
         setIsAuthenticated(true);
@@ -64,16 +66,13 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <AnimatedSplashOverlay />
         <Stack screenOptions={{ headerShown: false }}>
-          {isAuthenticated ? (
-            <>
-              <Stack.Screen name="(tabs)" options={{ title: 'Home' }} />
-              <Stack.Screen name="select-org" options={{ title: 'Select Organization' }} />
-            </>
-          ) : (
-            <>
-              <Stack.Screen name="login" options={{ title: 'Login' }} />
-            </>
-          )}
+          <Stack.Protected guard={isAuthenticated}>
+            <Stack.Screen name="(tabs)" options={{ title: 'Home' }} />
+            <Stack.Screen name="select-org" options={{ title: 'Select Organization' }} />
+          </Stack.Protected>
+          <Stack.Protected guard={!isAuthenticated}>
+            <Stack.Screen name="login" options={{ title: 'Login' }} />
+          </Stack.Protected>
         </Stack>
       </ThemeProvider>
     </QueryClientProvider>
