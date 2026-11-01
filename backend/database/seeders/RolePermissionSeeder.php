@@ -21,6 +21,7 @@ class RolePermissionSeeder extends Seeder
             'files.view',
             'notifications.view',
             'notifications.preferences',
+            'integrations.manage',
         ];
 
         $Permission = app(config('permission.models.permission'));
@@ -62,7 +63,7 @@ class RolePermissionSeeder extends Seeder
                 ]);
             }
 
-            $adminPerms = $Permission::whereIn('name', ['organization.view', 'members.view', 'members.manage', 'files.upload', 'files.view', 'notifications.view', 'notifications.preferences'])->where('guard_name', $guard)->pluck('id')->toArray();
+            $adminPerms = $Permission::whereIn('name', ['organization.view', 'members.view', 'members.manage', 'files.upload', 'files.view', 'notifications.view', 'notifications.preferences', 'integrations.manage'])->where('guard_name', $guard)->pluck('id')->toArray();
             foreach ($adminPerms as $permId) {
                 DB::table('role_has_permissions')->insert([
                     'permission_id' => $permId,

@@ -58,6 +58,17 @@ Route::prefix('v1')->group(function () {
             Route::get('/notifications', [\App\Http\Controllers\Api\V1\NotificationController::class, 'index']);
             Route::post('/notifications/{id}/read', [\App\Http\Controllers\Api\V1\NotificationController::class, 'markAsRead']);
             Route::post('/notifications/read-all', [\App\Http\Controllers\Api\V1\NotificationController::class, 'markAllAsRead']);
+
+            Route::get('/reference/countries', [\App\Http\Controllers\Api\V1\ReferenceController::class, 'countries']);
+            Route::get('/reference/currencies', [\App\Http\Controllers\Api\V1\ReferenceController::class, 'currencies']);
+            Route::get('/reference/locales', [\App\Http\Controllers\Api\V1\ReferenceController::class, 'locales']);
+
+            Route::get('/integrations', [\App\Http\Controllers\Api\V1\IntegrationController::class, 'index']);
+            Route::post('/integrations', [\App\Http\Controllers\Api\V1\IntegrationController::class, 'store']);
+            Route::get('/integrations/{id}', [\App\Http\Controllers\Api\V1\IntegrationController::class, 'show']);
+            Route::put('/integrations/{id}/secrets', [\App\Http\Controllers\Api\V1\IntegrationController::class, 'updateSecrets']);
+            Route::post('/integrations/{id}/test', [\App\Http\Controllers\Api\V1\IntegrationController::class, 'test']);
+            Route::put('/integrations/{id}/config', [\App\Http\Controllers\Api\V1\IntegrationController::class, 'updateConfig']);
         });
 });
 
