@@ -35,46 +35,9 @@ Route::prefix('v1')->group(function () {
     Route::middleware([\App\Http\Middleware\AuthenticateApi::class, \App\Http\Middleware\CurrentOrganizationMiddleware::class])
         ->prefix('org')
         ->group(function () {
-            Route::get('/current', function (Request $request) {
-                $organization = $request->get('current_organization');
-
-                return response()->json([
-                    'organization' => [
-                        'id' => $organization->id,
-                        'name' => $organization->name,
-                        'slug' => $organization->slug,
-                    ],
-                ]);
-            });
-
-            Route::patch('/current', function (Request $request) {
-                $organization = $request->get('current_organization');
-                $request->validate(['name' => 'sometimes|string|max:255', 'slug' => 'sometimes|string|max:255|unique:organizations,slug,' . $organization->id]);
-
-                $organization->update($request->only(['name', 'slug']));
-
-                return response()->json([
-                    'organization' => [
-                        'id' => $organization->id,
-                        'name' => $organization->name,
-                        'slug' => $organization->slug,
-                    ],
-                ]);
-            })->middleware('can:organization.update');
-
-            Route::get('/members', function (Request $request) {
-                $organization = $request->get('current_organization');
-                $members = $organization->memberships()->with('user')->get()->map(function ($membership) {
-                    return [
-                        'id' => $membership->user->id,
-                        'name' => $membership->user->name,
-                        'email' => $membership->user->email,
-                        'role' => $membership->user->getRoleNames()->first(),
-                    ];
-                });
-
-                return response()->json(['members' => $members]);
-            })->middleware('can:members.view');
+            Route::get('/current', [\App\Http\Controllers\Api\V1\OrganizationController::class, 'show']);
+            Route::patch('/current', [\App\Http\Controllers\Api\V1\OrganizationController::class, 'update']);
+            Route::get('/members', [\App\Http\Controllers\Api\V1\OrganizationController::class, 'members']);
         });
 });
 
