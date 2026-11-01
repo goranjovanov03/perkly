@@ -9,11 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('organization_memberships', function (Blueprint $table) {
-            $table->ulid('id')->primary();
-            $table->foreignUlid('user_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignUlid('organization_id')->constrained('organizations')->cascadeOnDelete();
+            $table->char('id', 26)->primary();
+            $table->char('user_id', 26);
+            $table->char('organization_id', 26);
             $table->enum('status', ['active', 'inactive', 'pending'])->default('pending');
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+            $table->foreign('organization_id')->references('id')->on('organizations')->cascadeOnDelete();
         });
     }
 

@@ -21,16 +21,20 @@ class AuthController extends Controller
         ]);
 
         if (! Auth::guard('web')->attempt($request->only('email', 'password'))) {
+            audit('auth.login_failed', null, null, ['email' => $request->email]);
             throw new AuthenticationException('Invalid credentials.');
         }
 
         $request->session()->regenerate();
 
+        $user = Auth::guard('web')->user();
+        audit('auth.login', 'user', $user->id);
+
         $response = response()->json([
             'user' => [
-                'id' => Auth::guard('web')->user()->id,
-                'name' => Auth::guard('web')->user()->name,
-                'email' => Auth::guard('web')->user()->email,
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
             ],
         ]);
 
@@ -43,6 +47,11 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        $user = Auth::guard('web')->user();
+        if ($user) {
+            audit('auth.logout', 'user', $user->id);
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
@@ -192,6 +201,7 @@ class AuthController extends Controller
         $user = $request->user();
 
         if (! Hash::check($request->current_password, $user->password)) {
+            audit('auth.password_change_failed', 'user', $user->id);
             $requestId = $request->header('X-Request-Id') ?? (string) \Illuminate\Support\Str::uuid();
             return response()->json([
                 'error' => [
@@ -208,6 +218,8 @@ class AuthController extends Controller
         $user->password = Hash::make($request->password);
         $user->save();
 
+        audit('auth.password_changed', 'user', $user->id);
+
         PersonalAccessToken::where('tokenable_id', $user->id)->delete();
 
         $currentSessionId = $request->session()->getId();
@@ -217,5 +229,80 @@ class AuthController extends Controller
             ->delete();
 
         return response()->json(['message' => 'Password updated successfully']);
+    }
+
+    public function updateLocale(Request $request)
+    {
+        $request->validate([
+            'locale' => 'required|in:mk,en',
+        ]);
+
+        $user = $request->user();
+        $user->locale = $request->locale;
+        $user->save();
+
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'locale' => $user->locale,
+            ],
+        ]);
+    }
+
+    public function bootstrap(Request $request)
+    {
+        $user = $request->user();
+
+        $organizations = $user->memberships()
+            ->where('status', 'active')
+            ->with('organization')
+            ->get()
+            ->map(function ($membership) {
+                return [
+                    'id' => $membership->organization->id,
+                    'name' => $membership->organization->name,
+                    'slug' => $membership->organization->slug,
+                ];
+            });
+
+        $currentOrganization = null;
+        $capabilities = [];
+
+        $organizationId = $request->header('X-Organization-Id');
+        if ($organizationId) {
+            $membership = $user->memberships()
+                ->where('organization_id', $organizationId)
+                ->where('status', 'active')
+                ->first();
+
+            if ($membership) {
+                $currentOrganization = [
+                    'id' => $membership->organization->id,
+                    'name' => $membership->organization->name,
+                    'slug' => $membership->organization->slug,
+                ];
+
+                app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($organizationId);
+                $capabilities = $user->getAllPermissions()->pluck('name')->toArray();
+            }
+        }
+
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'locale' => $user->locale,
+                'onboarded_at' => $user->onboarded_at,
+            ],
+            'organizations' => $organizations,
+            'current_organization' => $currentOrganization,
+            'locales' => ['mk', 'en'],
+            'default_locale' => 'mk',
+            'features' => new \stdClass(),
+            'capabilities' => $capabilities,
+        ]);
     }
 }

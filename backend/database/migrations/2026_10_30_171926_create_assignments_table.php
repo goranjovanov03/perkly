@@ -9,13 +9,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('assignments', function (Blueprint $table) {
-            $table->ulid('id')->primary();
-            $table->foreignUlid('person_id')->constrained('people')->cascadeOnDelete();
-            $table->foreignUlid('organization_unit_id')->constrained('organization_units')->cascadeOnDelete();
+            $table->char('id', 26)->primary();
+            $table->char('person_id', 26);
+            $table->char('organization_unit_id', 26);
             $table->date('start_date');
             $table->date('end_date')->nullable();
             $table->string('role')->nullable();
             $table->timestamps();
+
+            $table->foreign('person_id')->references('id')->on('people')->cascadeOnDelete();
+            $table->foreign('organization_unit_id')->references('id')->on('organization_units')->cascadeOnDelete();
         });
     }
 

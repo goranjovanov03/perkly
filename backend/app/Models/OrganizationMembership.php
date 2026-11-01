@@ -13,7 +13,7 @@ class OrganizationMembership extends Model
     protected $keyType = 'string';
     public $incrementing = false;
 
-    protected $fillable = ['user_id', 'organization_id', 'status'];
+    protected $fillable = ['id', 'user_id', 'organization_id', 'status'];
 
     protected $casts = [
         'status' => 'string',

@@ -23,6 +23,11 @@ Route::prefix('v1')->group(function () {
         Route::get('/me/organizations', [\App\Http\Controllers\AuthController::class, 'organizations']);
         Route::post('/me/onboarding/complete', [\App\Http\Controllers\AuthController::class, 'completeOnboarding']);
         Route::patch('/me/password', [\App\Http\Controllers\AuthController::class, 'updatePassword']);
+        Route::patch('/me/locale', [\App\Http\Controllers\AuthController::class, 'updateLocale']);
+    });
+
+    Route::middleware([\App\Http\Middleware\AuthenticateApi::class])->group(function () {
+        Route::get('/bootstrap', [\App\Http\Controllers\AuthController::class, 'bootstrap']);
     });
 
     Route::post('/auth/token', [\App\Http\Controllers\MobileAuthController::class, 'issueToken'])

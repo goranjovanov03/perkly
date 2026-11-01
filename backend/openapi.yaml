@@ -67,7 +67,7 @@ paths:
                     properties:
                       id:
                         type: string
-                        format: uuid
+                        format: ulid
                       name:
                         type: string
                       email:
@@ -229,27 +229,14 @@ paths:
                 type: object
                 properties:
                   user:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                        format: uuid
-                      name:
-                        type: string
-                      email:
-                        type: string
-                        format: email
-                      onboarded_at:
-                        type: string
-                        format: date-time
-                        nullable: true
-                    required: [id, name, email]
+                    $ref: '#/components/schemas/User'
                 required: [user]
               example:
                 user:
                   id: "01HX7Z9K9V9V9V9V9V9V9V9V9V"
                   name: "John Doe"
                   email: "john@example.com"
+                  locale: "mk"
                   onboarded_at: "2026-10-31T12:00:00.000000Z"
         '401':
           $ref: '#/components/responses/Unauthenticated'
@@ -317,16 +304,7 @@ paths:
                   organizations:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                          format: ulid
-                        name:
-                          type: string
-                        slug:
-                          type: string
-                      required: [id, name, slug]
+                      $ref: '#/components/schemas/OrganizationSummary'
                 required: [organizations]
               example:
                 organizations:
@@ -352,27 +330,104 @@ paths:
                 type: object
                 properties:
                   user:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                        format: uuid
-                      name:
-                        type: string
-                      email:
-                        type: string
-                        format: email
-                      onboarded_at:
-                        type: string
-                        format: date-time
-                    required: [id, name, email, onboarded_at]
+                    $ref: '#/components/schemas/User'
                 required: [user]
               example:
                 user:
                   id: "01HX7Z9K9V9V9V9V9V9V9V9V9V"
                   name: "John Doe"
                   email: "john@example.com"
+                  locale: "mk"
                   onboarded_at: "2026-10-31T12:00:00.000000Z"
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v1/me/locale:
+    patch:
+      summary: Update user locale
+      operationId: updateLocale
+      security:
+        - sanctum: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - locale
+              properties:
+                locale:
+                  type: string
+                  enum: [mk, en]
+      responses:
+        '200':
+          description: Locale updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                required: [user]
+              example:
+                user:
+                  id: "01HX7Z9K9V9V9V9V9V9V9V9V9V"
+                  name: "John Doe"
+                  email: "john@example.com"
+                  locale: "en"
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v1/bootstrap:
+    get:
+      summary: Get bootstrap data
+      operationId: getBootstrap
+      security:
+        - sanctum: []
+      parameters:
+        - name: X-Organization-Id
+          in: header
+          required: false
+          schema:
+            type: string
+            format: ulid
+          description: Organization ID
+      responses:
+        '200':
+          description: Bootstrap data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BootstrapResponse'
+              example:
+                user:
+                  id: "01HX7Z9K9V9V9V9V9V9V9V9V9V"
+                  name: "John Doe"
+                  email: "john@example.com"
+                  locale: "mk"
+                  onboarded_at: "2026-10-31T12:00:00.000000Z"
+                organizations:
+                  - id: "01HX7Z9K9V9V9V9V9V9V9V9V9V"
+                    name: "Acme Inc"
+                    slug: "acme-inc"
+                current_organization:
+                  id: "01HX7Z9K9V9V9V9V9V9V9V9V9V"
+                  name: "Acme Inc"
+                  slug: "acme-inc"
+                locales:
+                  - "mk"
+                  - "en"
+                default_locale: "mk"
+                features: {}
+                capabilities:
+                  - "organization.view"
+                  - "members.view"
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '500':
@@ -400,16 +455,7 @@ paths:
                 type: object
                 properties:
                   organization:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                        format: ulid
-                      name:
-                        type: string
-                      slug:
-                        type: string
-                    required: [id, name, slug]
+                    $ref: '#/components/schemas/Organization'
                 required: [organization]
               example:
                 organization:
@@ -457,16 +503,7 @@ paths:
                 type: object
                 properties:
                   organization:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                        format: ulid
-                      name:
-                        type: string
-                      slug:
-                        type: string
-                    required: [id, name, slug]
+                    $ref: '#/components/schemas/Organization'
                 required: [organization]
               example:
                 organization:
@@ -506,19 +543,7 @@ paths:
                   members:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                          format: ulid
-                        name:
-                          type: string
-                        email:
-                          type: string
-                          format: email
-                        role:
-                          type: string
-                      required: [id, name, email, role]
+                      $ref: '#/components/schemas/OrganizationMember'
                 required: [members]
               example:
                 members:
@@ -642,3 +667,88 @@ components:
                       type: string
                   required: [fields]
               required: [error]
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: ulid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        locale:
+          type: string
+          enum: [mk, en]
+        onboarded_at:
+          type: string
+          format: date-time
+          nullable: true
+      required: [id, name, email, locale]
+    OrganizationSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: ulid
+        name:
+          type: string
+        slug:
+          type: string
+      required: [id, name, slug]
+    Organization:
+      type: object
+      properties:
+        id:
+          type: string
+          format: ulid
+        name:
+          type: string
+        slug:
+          type: string
+      required: [id, name, slug]
+    OrganizationMember:
+      type: object
+      properties:
+        id:
+          type: string
+          format: ulid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+      required: [id, name, email, role]
+    BootstrapResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        organizations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationSummary'
+        current_organization:
+          allOf:
+            - $ref: '#/components/schemas/OrganizationSummary'
+            - type: object
+              properties:
+                nullable: true
+        locales:
+          type: array
+          items:
+            type: string
+            enum: [mk, en]
+        default_locale:
+          type: string
+          enum: [mk, en]
+        features:
+          type: object
+        capabilities:
+          type: array
+          items:
+            type: string
+      required: [user, organizations, locales, default_locale, features, capabilities]

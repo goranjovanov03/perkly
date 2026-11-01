@@ -37,7 +37,13 @@ class OrganizationController extends Controller
             'slug' => 'sometimes|string|max:255|unique:organizations,slug,' . $organization->id,
         ]);
 
+        $oldData = $organization->only(['name', 'slug']);
         $organization->update($request->only(['name', 'slug']));
+
+        audit('organization.updated', 'organization', $organization->id, [
+            'old' => $oldData,
+            'new' => $organization->only(['name', 'slug']),
+        ]);
 
         return response()->json([
             'organization' => [

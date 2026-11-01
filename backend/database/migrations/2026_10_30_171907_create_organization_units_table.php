@@ -9,15 +9,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('organization_units', function (Blueprint $table) {
-            $table->ulid('id')->primary();
-            $table->foreignUlid('organization_id')->constrained('organizations')->cascadeOnDelete();
-            $table->ulid('parent_id')->nullable();
+            $table->char('id', 26)->primary();
+            $table->char('organization_id', 26);
+            $table->char('parent_id', 26)->nullable();
             $table->string('name');
             $table->string('slug');
             $table->timestamps();
         });
 
         Schema::table('organization_units', function (Blueprint $table) {
+            $table->foreign('organization_id')->references('id')->on('organizations')->cascadeOnDelete();
             $table->foreign('parent_id')->references('id')->on('organization_units')->cascadeOnDelete();
         });
     }

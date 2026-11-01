@@ -13,7 +13,7 @@ class Organization extends Model
     protected $keyType = 'string';
     public $incrementing = false;
 
-    protected $fillable = ['name', 'slug'];
+    protected $fillable = ['id', 'name', 'slug'];
 
     public function units(): HasMany
     {
