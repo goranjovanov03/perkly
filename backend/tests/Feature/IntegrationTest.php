@@ -479,29 +479,66 @@ class IntegrationTest extends TestCase
 
     public function test_secrets_never_in_logs(): void
     {
+        $handler = new \Monolog\Handler\TestHandler();
+        \Illuminate\Support\Facades\Log::swap(
+            new \Monolog\Logger('test', [$handler])
+        );
+
         $organization = Organization::factory()->create();
         $user = User::factory()->create(['password' => Hash::make('password123')]);
         $this->actingAsUserInOrg($user, $organization, 'owner');
 
         $provider = IntegrationProvider::where('key', 'stripe')->first();
-        $connection = IntegrationConnection::factory()->create([
-            'organization_id' => $organization->id,
-            'provider_key' => $provider->key,
-            'name' => 'Test Stripe',
-        ]);
 
-        $response = $this->actingAs($user, 'sanctum')
+        $this->actingAs($user, 'sanctum')
             ->withHeaders(['X-Organization-Id' => $organization->id])
-            ->putJson("/api/v1/org/integrations/{$connection->id}/secrets", [
+            ->postJson('/api/v1/org/integrations', [
+                'provider_key' => 'stripe',
+                'name' => 'Test Stripe',
+                'config' => ['merchant_id' => 'm_123', 'api_key' => 'sk_test_123', 'environment' => 'sandbox'],
                 'secrets' => ['api_key' => 'sk_test_123', 'webhook_secret' => 'whsec_123'],
             ]);
 
-        $this->assertStringNotContainsString('sk_test_123', $response->getContent());
-        $this->assertStringNotContainsString('whsec_123', $response->getContent());
+        $connection = \App\Models\IntegrationConnection::where('organization_id', $organization->id)
+            ->where('name', 'Test Stripe')
+            ->first();
+        $this->assertNotNull($connection);
 
-        $audit = \App\Models\AuditLog::where('action', 'integration.secrets_updated')->first();
-        $this->assertNotNull($audit);
-        $this->assertArrayNotHasKey('sk_test_123', $audit->metadata ?? []);
-        $this->assertArrayNotHasKey('whsec_123', $audit->metadata ?? []);
+        $this->actingAs($user, 'sanctum')
+            ->withHeaders(['X-Organization-Id' => $organization->id])
+            ->putJson("/api/v1/org/integrations/{$connection->id}/secrets", [
+                'secrets' => ['api_key' => 'sk_new_123', 'webhook_secret' => 'whsec_new_123'],
+            ]);
+
+        $this->actingAs($user, 'sanctum')
+            ->withHeaders(['X-Organization-Id' => $organization->id])
+            ->getJson("/api/v1/org/integrations/{$connection->id}");
+
+        $this->actingAs($user, 'sanctum')
+            ->withHeaders(['X-Organization-Id' => $organization->id])
+            ->postJson("/api/v1/org/integrations/{$connection->id}/test");
+
+        $connection->update([
+            'config' => ['merchant_id' => 'm_123', 'environment' => 'sandbox', 'fail' => true],
+        ]);
+
+        $this->actingAs($user, 'sanctum')
+            ->withHeaders(['X-Organization-Id' => $organization->id])
+            ->postJson("/api/v1/org/integrations/{$connection->id}/test");
+
+        $records = $handler->getRecords();
+
+        foreach ($records as $record) {
+            $message = json_encode($record['message'] ?? '');
+            $context = json_encode($record['context'] ?? []);
+            $this->assertStringNotContainsString('sk_test_123', $message);
+            $this->assertStringNotContainsString('whsec_123', $message);
+            $this->assertStringNotContainsString('sk_new_123', $message);
+            $this->assertStringNotContainsString('whsec_new_123', $message);
+            $this->assertStringNotContainsString('sk_test_123', $context);
+            $this->assertStringNotContainsString('whsec_123', $context);
+            $this->assertStringNotContainsString('sk_new_123', $context);
+            $this->assertStringNotContainsString('whsec_new_123', $context);
+        }
     }
 }
