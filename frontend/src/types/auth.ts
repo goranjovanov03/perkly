@@ -2,6 +2,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  locale: 'mk' | 'en';
   onboarded_at: string | null;
 }
 
@@ -36,10 +37,24 @@ export interface ApiError {
   };
 }
 
+export interface BootstrapResponse {
+  user: User;
+  organizations: Organization[];
+  current_organization: Organization | null;
+  locales: ('mk' | 'en')[];
+  default_locale: 'mk' | 'en';
+  features: Record<string, unknown>;
+  capabilities: string[];
+}
+
 export interface AuthState {
   user: User | null;
   organizations: Organization[];
   selectedOrganizationId: string | null;
+  currentOrganization: Organization | null;
+  capabilities: string[];
+  locales: ('mk' | 'en')[];
+  defaultLocale: 'mk' | 'en';
   isAuthenticated: boolean;
   isLoading: boolean;
   sessionExpired: boolean;

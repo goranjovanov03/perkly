@@ -11,6 +11,9 @@
     "mk": "Македонски",
     "en": "English"
   },
+  "header": {
+    "appName": "Perkly"
+  },
   "auth": {
     "login": {
       "title": "Најава",
@@ -67,11 +70,72 @@
     "currentOrganization": "Тековна организација: {{orgName}}",
     "noOrganization": "Нема избрана организација"
   },
+  "nav": {
+    "main": "Главна навигација",
+    "home": "Почетна",
+    "notifications": "Известувања",
+    "integrations": "Интеграции"
+  },
+"notifications": {
+    "title": "Известувања",
+    "noOrganization": "Нема избрана организација",
+    "empty": "Нема известувања",
+    "unreadOnly": "Само непрочитани",
+    "markAllRead": "Обележи ги сите како прочитани",
+    "markRead": "Обележи како прочитано",
+    "loadMore": "Вчиtaj повеќе",
+    "preferences": "Поставки",
+    "noPermission": "Немате дозвола за прегледување на известувања",
+    "test": {
+      "title": "Тест известување",
+      "body": "Ова е тест известување за {{name}}"
+    },
+    "preferencesTitle": "Поставки за известувања",
+    "preferencesDescription": "Управувајте со каналите за известувања за секој тип.",
+    "preferencesEmpty": "Нема достапни типови на известувања.",
+    "type": "Тип",
+    "channels": {
+      "in_app": "Во апликација",
+      "push": "Push",
+      "email": "Е-пошта"
+    },
+    "preferencesDetail": "Детали за типот {{type}}",
+    "enabled": "Овозможено",
+    "disabled": "Оневозможено"
+  },
+  "integrations": {
+    "title": "Интеграции",
+    "noOrganization": "Нема избрана организација",
+    "noPermission": "Немате дозвола за управување со интеграции",
+    "empty": "Нема интеграции",
+    "create": "Креирај интеграција",
+    "createTitle": "Нова интеграција",
+    "type": "Тип",
+    "name": "Име",
+    "config": "Конфигурација",
+    "secrets": "Тајни",
+    "secretsTitle": "Тајни за {{name}}",
+    "secretsHint": "Внесете ги тајните вредности. Соодветните полиња се зачувуваат безбедно и никогаш не се предефинирани.",
+    "secretKeyPlaceholder": "Клуч (нпр. api_key)",
+    "secretValuePlaceholder": "Вредност",
+    "test": "Тестирај",
+    "testResult": "Резултат од тест",
+    "delete": "Избриши",
+    "lastHealthCheck": "Последна проверка на здравје",
+    "lastResult": "Последен резултат",
+    "never": "Никогаш",
+    "status": {
+      "active": "Активна",
+      "inactive": "Неактивна",
+      "error": "Грешка"
+    }
+  },
   "common": {
     "loading": "Вчитување...",
     "error": "Грешка",
     "save": "Зачувај",
     "cancel": "Откажи",
+    "close": "Затвори",
     "networkError": "Не може да се поврзе со серверот. Ве молиме обидете се повторно."
   }
 }

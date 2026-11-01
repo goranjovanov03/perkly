@@ -5,10 +5,13 @@ import { LoginPage } from './pages/LoginPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { HomePage } from './pages/HomePage';
+import { NotificationsPage } from './pages/NotificationsPage';
+import { NotificationPreferencesPage } from './pages/NotificationPreferencesPage';
+import { IntegrationsPage } from './pages/IntegrationsPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { PublicRoute } from './components/auth/PublicRoute';
 import { SessionExpiredGuard } from './components/auth/SessionExpiredGuard';
-import { LanguageSwitcher } from './components/LanguageSwitcher';
+import { AppLayout } from './components/layout/AppLayout';
 import './lib/i18n';
 import './App.css';
 
@@ -61,11 +64,16 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <SessionExpiredGuard>
-                <HomePage />
+                <AppLayout />
               </SessionExpiredGuard>
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<HomePage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="notifications/preferences" element={<NotificationPreferencesPage />} />
+          <Route path="integrations" element={<IntegrationsPage />} />
+        </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
@@ -76,19 +84,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <div style={styles.app}>
-          <LanguageSwitcher />
-          <AppRoutes />
-        </div>
+        <AppRoutes />
       </AuthProvider>
     </QueryClientProvider>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  app: {
-    minHeight: '100vh',
-  },
-};
 
 export default App;

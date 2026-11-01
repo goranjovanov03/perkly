@@ -1,9 +1,10 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getMe, getOrganizations, logout, logoutAll, login as loginApi } from '../services/auth';
+import { getBootstrapData, logout, logoutAll, login as loginApi } from '../services/auth';
 import type { AuthState, LoginCredentials, ApiError } from '../types/auth';
 import { ORGANIZATION_STORAGE_KEY, SESSION_EXPIRED_KEY } from '../types/auth';
 import { getErrorMessage } from '../services/auth';
+import i18n from '../lib/i18n';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<{ error?: string; fieldErrors?: Record<string, string[]> }>;
@@ -24,27 +25,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return localStorage.getItem(SESSION_EXPIRED_KEY) === 'true';
   });
 
-  const { data: meData, error: meError, isLoading: meLoading, refetch: refetchMe } = useQuery({
-    queryKey: ['me'],
-    queryFn: getMe,
+  const { data: bootstrapData, error: bootstrapError, isLoading: bootstrapLoading, refetch: refetchBootstrap } = useQuery({
+    queryKey: ['bootstrap'],
+    queryFn: getBootstrapData,
     retry: false,
-    staleTime: Infinity,
-  });
-
-  const { data: orgsData, isLoading: orgsLoading, refetch: refetchOrgs } = useQuery({
-    queryKey: ['organizations'],
-    queryFn: getOrganizations,
-    retry: false,
-    enabled: !!meData && !meError,
     staleTime: Infinity,
   });
 
   const loginMutation = useMutation({
     mutationFn: loginApi,
     onSuccess: async () => {
-      await refetchMe();
-      const orgs = await refetchOrgs();
-      const organizations = orgs.data?.organizations || [];
+      await refetchBootstrap();
+      const data = await refetchBootstrap();
+      const organizations = data.data?.organizations || [];
       if (organizations.length === 1) {
         setSelectedOrganizationId(organizations[0].id);
         localStorage.setItem(ORGANIZATION_STORAGE_KEY, organizations[0].id);
@@ -71,20 +64,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    if (orgsData?.organizations) {
-      const organizations = orgsData.organizations;
+    if (bootstrapData?.organizations) {
+      const organizations = bootstrapData.organizations;
       const storedOrgId = localStorage.getItem(ORGANIZATION_STORAGE_KEY);
       
       if (storedOrgId && organizations.some(org => org.id === storedOrgId)) {
         setSelectedOrganizationId(storedOrgId);
       }
     }
-  }, [orgsData]);
+  }, [bootstrapData]);
 
   useEffect(() => {
-    if (meError) {
-      const errorCode = meError && typeof meError === 'object' && 'error' in meError
-        ? (meError as ApiError).error?.code
+    if (bootstrapError) {
+      const errorCode = bootstrapError && typeof bootstrapError === 'object' && 'error' in bootstrapError
+        ? (bootstrapError as ApiError).error?.code
         : null;
       
       if (errorCode === 'UNAUTHENTICATED') {
@@ -92,7 +85,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem(SESSION_EXPIRED_KEY, 'true');
       }
     }
-  }, [meError]);
+  }, [bootstrapError]);
+
+  useEffect(() => {
+    if (bootstrapData?.user?.locale && bootstrapData.user.locale !== i18n.language) {
+      i18n.changeLanguage(bootstrapData.user.locale);
+      localStorage.setItem('language', bootstrapData.user.locale);
+    }
+  }, [bootstrapData?.user?.locale]);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     try {
@@ -111,22 +111,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const selectOrganization = useCallback((orgId: string) => {
     setSelectedOrganizationId(orgId);
     localStorage.setItem(ORGANIZATION_STORAGE_KEY, orgId);
-  }, []);
+    queryClient.invalidateQueries({ queryKey: ['bootstrap'] });
+  }, [queryClient]);
 
   const clearSessionExpired = useCallback(() => {
     setSessionExpired(false);
     localStorage.removeItem(SESSION_EXPIRED_KEY);
   }, []);
 
-  const user = meData?.user || null;
-  const organizations = orgsData?.organizations || [];
-  const isAuthenticated = !!user && !meError;
-  const isLoading = meLoading || (isAuthenticated && orgsLoading);
+  const user = bootstrapData?.user || null;
+  const organizations = bootstrapData?.organizations || [];
+  const currentOrganization = bootstrapData?.current_organization || null;
+  const capabilities = bootstrapData?.capabilities || [];
+  const locales = bootstrapData?.locales || ['mk', 'en'];
+  const defaultLocale = bootstrapData?.default_locale || 'mk';
+  const isAuthenticated = !!user && !bootstrapError;
+  const isLoading = bootstrapLoading;
 
   const value = useMemo(() => ({
     user,
     organizations,
     selectedOrganizationId,
+    currentOrganization,
+    capabilities,
+    locales,
+    defaultLocale,
     isAuthenticated,
     isLoading,
     sessionExpired,
@@ -139,6 +148,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     organizations,
     selectedOrganizationId,
+    currentOrganization,
+    capabilities,
+    locales,
+    defaultLocale,
     isAuthenticated,
     isLoading,
     sessionExpired,

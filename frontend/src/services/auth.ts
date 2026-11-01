@@ -1,7 +1,7 @@
-import { apiClient, apiBaseUrl, initCsrfCookie } from '../lib/api';
-import type { LoginCredentials, ForgotPasswordData, ResetPasswordData, User, Organization, ApiError } from '../types/auth';
+import { apiClient, apiBaseUrl } from '../lib/api';
+import type { LoginCredentials, ForgotPasswordData, ResetPasswordData, User, Organization, ApiError, BootstrapResponse } from '../types/auth';
 import { ORGANIZATION_STORAGE_KEY } from '../types/auth';
-import { login as apiLogin, logout as apiLogout, logoutAll as apiLogoutAll, forgotPassword as apiForgotPassword, resetPassword as apiResetPassword } from '@perkly/api-client';
+import { login as apiLogin, logout as apiLogout, logoutAll as apiLogoutAll, forgotPassword as apiForgotPassword, resetPassword as apiResetPassword, getBootstrap, updateLocale, getNotificationPreferences, updateNotificationPreferences } from '@perkly/api-client';
 
 function getErrorMessage(error: unknown, defaultMessage: string): string {
   if (error && typeof error === 'object' && 'error' in error) {
@@ -29,8 +29,6 @@ function getAuthHeaders(): Record<string, string> {
 }
 
 export async function login(credentials: LoginCredentials): Promise<{ user: User }> {
-  await initCsrfCookie();
-  
   const response = await apiLogin(apiClient, apiBaseUrl, credentials.email, credentials.password);
   return response;
 }
@@ -53,6 +51,12 @@ export async function getMe(): Promise<{ user: User }> {
   }
 
   return response.data as { user: User };
+}
+
+export async function getBootstrapData(): Promise<BootstrapResponse> {
+  const orgId = localStorage.getItem(ORGANIZATION_STORAGE_KEY) || undefined;
+  const response = await getBootstrap(apiClient, orgId);
+  return response as BootstrapResponse;
 }
 
 export async function getOrganizations(): Promise<{ organizations: Organization[] }> {
@@ -82,15 +86,13 @@ export async function completeOnboarding(): Promise<{ user: User }> {
 }
 
 export async function forgotPassword(data: ForgotPasswordData): Promise<{ message: string }> {
-  await initCsrfCookie();
   const response = await apiForgotPassword(apiClient, apiBaseUrl, data.email);
   return response;
 }
 
 export async function resetPassword(data: ResetPasswordData): Promise<{ message: string }> {
-  await initCsrfCookie();
   const response = await apiResetPassword(apiClient, apiBaseUrl, data.token, data.email, data.password, data.password_confirmation);
   return response;
 }
 
-export { getErrorMessage, getFieldErrors };
+export { getErrorMessage, getFieldErrors, updateLocale, getNotificationPreferences, updateNotificationPreferences };

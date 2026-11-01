@@ -158,6 +158,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/locale": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update user locale */
+        patch: operations["updateLocale"];
+        trace?: never;
+    };
+    "/v1/me/notification-preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get notification preferences */
+        get: operations["getNotificationPreferences"];
+        /** Update notification preferences */
+        put: operations["updateNotificationPreferences"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register or update device installation */
+        post: operations["registerDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/devices/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Revoke device installation */
+        delete: operations["revokeDevice"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/bootstrap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get bootstrap data */
+        get: operations["getBootstrap"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/org/current": {
         parameters: {
             query?: never;
@@ -193,6 +279,195 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/org/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List organization files */
+        get: operations["listFiles"];
+        put?: never;
+        /** Upload a file */
+        post: operations["uploadFile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/org/files/{file}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get file metadata with download URL */
+        get: operations["getFile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/org/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List notifications with cursor pagination */
+        get: operations["listNotifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/org/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark all notifications as read */
+        post: operations["markAllNotificationsAsRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/org/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark notification as read */
+        post: operations["markNotificationAsRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/org/integrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List integration connections */
+        get: operations["listIntegrations"];
+        put?: never;
+        /** Create integration connection */
+        post: operations["createIntegration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/org/integrations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get integration connection */
+        get: operations["getIntegration"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/org/integrations/{id}/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update integration config */
+        put: operations["updateIntegration"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/org/integrations/{id}/secrets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update integration secrets (write-only) */
+        put: operations["updateIntegrationSecrets"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/org/integrations/{id}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test integration connection */
+        post: operations["testIntegration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/files/download/{file}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download file via signed URL */
+        get: operations["downloadFile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -211,6 +486,123 @@ export interface components {
                     [key: string]: string[];
                 };
             };
+        };
+        User: {
+            /** Format: ulid */
+            id: string;
+            name: string;
+            /** Format: email */
+            email: string;
+            /** @enum {string} */
+            locale: "mk" | "en";
+            /** Format: date-time */
+            onboarded_at?: string | null;
+        };
+        OrganizationSummary: {
+            /** Format: ulid */
+            id: string;
+            name: string;
+            slug: string;
+        };
+        Organization: {
+            /** Format: ulid */
+            id: string;
+            name: string;
+            slug: string;
+        };
+        OrganizationMember: {
+            /** Format: ulid */
+            id: string;
+            name: string;
+            /** Format: email */
+            email: string;
+            role: string;
+        };
+        BootstrapResponse: {
+            user: components["schemas"]["User"];
+            organizations: components["schemas"]["OrganizationSummary"][];
+            current_organization?: components["schemas"]["OrganizationSummary"] & {
+                nullable?: unknown;
+            };
+            locales: ("mk" | "en")[];
+            /** @enum {string} */
+            default_locale: "mk" | "en";
+            features: Record<string, never>;
+            capabilities: string[];
+        };
+        FileResponse: {
+            /** Format: ulid */
+            id: string;
+            original_name: string;
+            /** @enum {string} */
+            mime_type: "application/pdf" | "image/png" | "image/jpeg" | "image/webp";
+            size_bytes: number;
+            sha256_hash: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        FileListItem: components["schemas"]["FileResponse"] & {
+            uploader?: {
+                /** Format: ulid */
+                id: string;
+                name: string;
+            };
+        };
+        FileDetail: components["schemas"]["FileListItem"] & {
+            /** Format: uri */
+            download_url?: string;
+        };
+        DeviceInstallation: {
+            /** Format: ulid */
+            id: string;
+            /** @enum {string} */
+            platform: "android" | "ios";
+            push_token: string;
+            app_version?: string | null;
+            /** @enum {string} */
+            locale: "mk" | "en";
+            /** Format: date-time */
+            last_seen_at?: string | null;
+            /** Format: date-time */
+            revoked_at?: string | null;
+            /** Format: date-time */
+            created_at: string;
+        };
+        Notification: {
+            /** Format: ulid */
+            id: string;
+            type: string;
+            title_key: string;
+            title_params?: {
+                [key: string]: unknown;
+            } | null;
+            body_key: string;
+            body_params?: {
+                [key: string]: unknown;
+            } | null;
+            data?: {
+                [key: string]: unknown;
+            } | null;
+            /** Format: date-time */
+            read_at?: string | null;
+            /** Format: date-time */
+            created_at: string;
+        };
+        Integration: {
+            /** Format: ulid */
+            id: string;
+            type: string;
+            name: string;
+            config: Record<string, never>;
+            /** @enum {string} */
+            status: "active" | "inactive" | "error";
+            /** Format: date-time */
+            last_health_check_at?: string | null;
+            last_health_check_result?: Record<string, never> | null;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
         };
     };
     responses: {
@@ -401,7 +793,7 @@ export interface operations {
                      */
                     "application/json": {
                         user: {
-                            /** Format: uuid */
+                            /** Format: ulid */
                             id: string;
                             name: string;
                             /** Format: email */
@@ -573,20 +965,13 @@ export interface operations {
                      *         "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
                      *         "name": "John Doe",
                      *         "email": "john@example.com",
+                     *         "locale": "mk",
                      *         "onboarded_at": "2026-10-31T12:00:00.000000Z"
                      *       }
                      *     }
                      */
                     "application/json": {
-                        user: {
-                            /** Format: uuid */
-                            id: string;
-                            name: string;
-                            /** Format: email */
-                            email: string;
-                            /** Format: date-time */
-                            onboarded_at?: string | null;
-                        };
+                        user: components["schemas"]["User"];
                     };
                 };
             };
@@ -662,12 +1047,7 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        organizations: {
-                            /** Format: ulid */
-                            id: string;
-                            name: string;
-                            slug: string;
-                        }[];
+                        organizations: components["schemas"]["OrganizationSummary"][];
                     };
                 };
             };
@@ -696,21 +1076,260 @@ export interface operations {
                      *         "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
                      *         "name": "John Doe",
                      *         "email": "john@example.com",
+                     *         "locale": "mk",
                      *         "onboarded_at": "2026-10-31T12:00:00.000000Z"
                      *       }
                      *     }
                      */
                     "application/json": {
-                        user: {
-                            /** Format: uuid */
-                            id: string;
-                            name: string;
-                            /** Format: email */
-                            email: string;
-                            /** Format: date-time */
-                            onboarded_at: string;
+                        user: components["schemas"]["User"];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    updateLocale: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    locale: "mk" | "en";
+                };
+            };
+        };
+        responses: {
+            /** @description Locale updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "user": {
+                     *         "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
+                     *         "name": "John Doe",
+                     *         "email": "john@example.com",
+                     *         "locale": "en"
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        user: components["schemas"]["User"];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    getNotificationPreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Notification preferences */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "preferences": {
+                     *         "in_app": {
+                     *           "notification.test": true
+                     *         },
+                     *         "push": {
+                     *           "notification.test": true
+                     *         },
+                     *         "email": {
+                     *           "notification.test": false
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        preferences: {
+                            [key: string]: {
+                                [key: string]: boolean;
+                            };
                         };
                     };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    updateNotificationPreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    preferences: {
+                        /** @enum {string} */
+                        channel: "in_app" | "push" | "email";
+                        type: string;
+                        enabled: boolean;
+                    }[];
+                };
+            };
+        };
+        responses: {
+            /** @description Updated preferences */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        preferences: {
+                            [key: string]: {
+                                [key: string]: boolean;
+                            };
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    registerDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    platform: "android" | "ios";
+                    push_token: string;
+                    app_version?: string;
+                    /** @enum {string} */
+                    locale?: "mk" | "en";
+                };
+            };
+        };
+        responses: {
+            /** @description Device registered */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        installation: components["schemas"]["DeviceInstallation"];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    revokeDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Device revoked */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    getBootstrap: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Organization ID */
+                "X-Organization-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bootstrap data */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "user": {
+                     *         "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
+                     *         "name": "John Doe",
+                     *         "email": "john@example.com",
+                     *         "locale": "mk",
+                     *         "onboarded_at": "2026-10-31T12:00:00.000000Z"
+                     *       },
+                     *       "organizations": [
+                     *         {
+                     *           "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
+                     *           "name": "Acme Inc",
+                     *           "slug": "acme-inc"
+                     *         }
+                     *       ],
+                     *       "current_organization": {
+                     *         "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
+                     *         "name": "Acme Inc",
+                     *         "slug": "acme-inc"
+                     *       },
+                     *       "locales": [
+                     *         "mk",
+                     *         "en"
+                     *       ],
+                     *       "default_locale": "mk",
+                     *       "features": {},
+                     *       "capabilities": [
+                     *         "organization.view",
+                     *         "members.view"
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["BootstrapResponse"];
                 };
             };
             401: components["responses"]["Unauthenticated"];
@@ -745,12 +1364,7 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        organization: {
-                            /** Format: ulid */
-                            id: string;
-                            name: string;
-                            slug: string;
-                        };
+                        organization: components["schemas"]["Organization"];
                     };
                 };
             };
@@ -794,12 +1408,7 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        organization: {
-                            /** Format: ulid */
-                            id: string;
-                            name: string;
-                            slug: string;
-                        };
+                        organization: components["schemas"]["Organization"];
                     };
                 };
             };
@@ -840,19 +1449,516 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        members: {
-                            /** Format: ulid */
-                            id: string;
-                            name: string;
-                            /** Format: email */
-                            email: string;
-                            role: string;
-                        }[];
+                        members: components["schemas"]["OrganizationMember"][];
                     };
                 };
             };
             401: components["responses"]["Unauthenticated"];
             403: components["responses"]["Forbidden"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    listFiles: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Organization ID */
+                "X-Organization-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of files */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "files": [
+                     *         {
+                     *           "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
+                     *           "original_name": "document.pdf",
+                     *           "mime_type": "application/pdf",
+                     *           "size_bytes": 102400,
+                     *           "sha256_hash": "a1b2c3d4e5f6...",
+                     *           "created_at": "2026-11-01T12:00:00.000000Z",
+                     *           "uploader": {
+                     *             "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
+                     *             "name": "John Doe"
+                     *           }
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": {
+                        files: components["schemas"]["FileListItem"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    uploadFile: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Organization ID */
+                "X-Organization-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /**
+                     * Format: binary
+                     * @description File to upload (max 10 MB, allowed types: PDF, PNG, JPG, WebP)
+                     */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description File uploaded */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "file": {
+                     *         "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
+                     *         "original_name": "document.pdf",
+                     *         "mime_type": "application/pdf",
+                     *         "size_bytes": 102400,
+                     *         "sha256_hash": "a1b2c3d4e5f6...",
+                     *         "created_at": "2026-11-01T12:00:00.000000Z"
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        file: components["schemas"]["FileResponse"];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    getFile: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Organization ID */
+                "X-Organization-Id": string;
+            };
+            path: {
+                /** @description File ID */
+                file: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description File metadata with signed download URL */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "file": {
+                     *         "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
+                     *         "original_name": "document.pdf",
+                     *         "mime_type": "application/pdf",
+                     *         "size_bytes": 102400,
+                     *         "sha256_hash": "a1b2c3d4e5f6...",
+                     *         "created_at": "2026-11-01T12:00:00.000000Z",
+                     *         "uploader": {
+                     *           "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
+                     *           "name": "John Doe"
+                     *         },
+                     *         "download_url": "http://localhost/api/v1/files/download/01HX7Z9K9V9V9V9V9V9V9V9V9V?expires=...&signature=..."
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        file: components["schemas"]["FileDetail"];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    listNotifications: {
+        parameters: {
+            query?: {
+                /** @description Cursor for pagination (created_at of last item) */
+                cursor?: string;
+                /** @description Filter to unread notifications only */
+                unread?: boolean;
+            };
+            header: {
+                /** @description Organization ID */
+                "X-Organization-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of notifications */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "notifications": [
+                     *         {
+                     *           "id": "01HX7Z9K9V9V9V9V9V9V9V9V9V",
+                     *           "type": "notification.test",
+                     *           "title_key": "notification.test.title",
+                     *           "title_params": {
+                     *             "name": "John"
+                     *           },
+                     *           "body_key": "notification.test.body",
+                     *           "body_params": {
+                     *             "name": "John"
+                     *           },
+                     *           "data": {
+                     *             "target_type": "test",
+                     *             "target_id": "01HX7Z9K9V9V9V9V9V9V9V9V9V"
+                     *           },
+                     *           "read_at": null,
+                     *           "created_at": "2026-11-01T12:00:00.000000Z"
+                     *         }
+                     *       ],
+                     *       "next_cursor": "2026-11-01T11:00:00.000000Z"
+                     *     }
+                     */
+                    "application/json": {
+                        notifications: components["schemas"]["Notification"][];
+                        /** Format: date-time */
+                        next_cursor?: string | null;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    markAllNotificationsAsRead: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Organization ID */
+                "X-Organization-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description All notifications marked as read */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    markNotificationAsRead: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Organization ID */
+                "X-Organization-Id": string;
+            };
+            path: {
+                /** @description Notification ID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Notification marked as read */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    listIntegrations: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Organization ID */
+                "X-Organization-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of integration connections */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        integrations: components["schemas"]["Integration"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    createIntegration: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Organization ID */
+                "X-Organization-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    type: string;
+                    name: string;
+                    config?: Record<string, never>;
+                };
+            };
+        };
+        responses: {
+            /** @description Integration connection created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        integration: components["schemas"]["Integration"];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    getIntegration: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Organization ID */
+                "X-Organization-Id": string;
+            };
+            path: {
+                /** @description Integration ID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Integration connection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        integration: components["schemas"]["Integration"];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    updateIntegration: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Organization ID */
+                "X-Organization-Id": string;
+            };
+            path: {
+                /** @description Integration ID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name?: string;
+                    config?: Record<string, never>;
+                };
+            };
+        };
+        responses: {
+            /** @description Integration updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        integration: components["schemas"]["Integration"];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    updateIntegrationSecrets: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Organization ID */
+                "X-Organization-Id": string;
+            };
+            path: {
+                /** @description Integration ID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    secrets?: {
+                        [key: string]: string;
+                    };
+                };
+            };
+        };
+        responses: {
+            /** @description Secrets updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationError"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    testIntegration: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Organization ID */
+                "X-Organization-Id": string;
+            };
+            path: {
+                /** @description Integration ID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Test result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        message: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["ServerError"];
+        };
+    };
+    downloadFile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description File ID */
+                file: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description File stream */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
             500: components["responses"]["ServerError"];
         };
     };

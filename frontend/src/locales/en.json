@@ -11,6 +11,9 @@
     "mk": "Македонски",
     "en": "English"
   },
+  "header": {
+    "appName": "Perkly"
+  },
   "auth": {
     "login": {
       "title": "Login",
@@ -67,11 +70,72 @@
     "currentOrganization": "Current organization: {{orgName}}",
     "noOrganization": "No organization selected"
   },
+  "nav": {
+    "main": "Main navigation",
+    "home": "Home",
+    "notifications": "Notifications",
+    "integrations": "Integrations"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "noOrganization": "No organization selected",
+    "empty": "No notifications",
+    "unreadOnly": "Unread only",
+    "markAllRead": "Mark all as read",
+    "markRead": "Mark as read",
+    "loadMore": "Load more",
+    "preferences": "Preferences",
+    "noPermission": "No permission to view notifications",
+    "test": {
+      "title": "Test notification",
+      "body": "This is a test notification for {{name}}"
+    },
+    "preferencesTitle": "Notification Preferences",
+    "preferencesDescription": "Manage notification channels for each type.",
+    "preferencesEmpty": "No notification types available.",
+    "type": "Type",
+    "channels": {
+      "in_app": "In-app",
+      "push": "Push",
+      "email": "Email"
+    },
+    "preferencesDetail": "Details for type {{type}}",
+    "enabled": "Enabled",
+    "disabled": "Disabled"
+  },
+  "integrations": {
+    "title": "Integrations",
+    "noOrganization": "No organization selected",
+    "noPermission": "No permission to manage integrations",
+    "empty": "No integrations",
+    "create": "Create integration",
+    "createTitle": "New integration",
+    "type": "Type",
+    "name": "Name",
+    "config": "Configuration",
+    "secrets": "Secrets",
+    "secretsTitle": "Secrets for {{name}}",
+    "secretsHint": "Enter secret values. Fields are stored securely and never prefilled.",
+    "secretKeyPlaceholder": "Key (e.g. api_key)",
+    "secretValuePlaceholder": "Value",
+    "test": "Test",
+    "testResult": "Test result",
+    "delete": "Delete",
+    "lastHealthCheck": "Last health check",
+    "lastResult": "Last result",
+    "never": "Never",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "error": "Error"
+    }
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error",
     "save": "Save",
     "cancel": "Cancel",
+    "close": "Close",
     "networkError": "Cannot connect to server. Please try again."
   }
 }

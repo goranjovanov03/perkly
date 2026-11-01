@@ -742,7 +742,7 @@ paths:
                 file:
                   type: string
                   format: binary
-                  description: File to upload (max 10 MB, allowed types: PDF, PNG, JPG, WebP)
+                  description: 'File to upload (max 10 MB, allowed types: PDF, PNG, JPG, WebP)'
       responses:
         '201':
           description: File uploaded
@@ -994,6 +994,275 @@ paths:
                   message:
                     type: string
                 required: [message]
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v1/org/integrations:
+    get:
+      summary: List integration connections
+      operationId: listIntegrations
+      security:
+        - sanctum: []
+      parameters:
+        - name: X-Organization-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Organization ID
+      responses:
+        '200':
+          description: List of integration connections
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  integrations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Integration'
+                required: [integrations]
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      summary: Create integration connection
+      operationId: createIntegration
+      security:
+        - sanctum: []
+      parameters:
+        - name: X-Organization-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Organization ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - name
+              properties:
+                type:
+                  type: string
+                name:
+                  type: string
+                config:
+                  type: object
+      responses:
+        '201':
+          description: Integration connection created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  integration:
+                    $ref: '#/components/schemas/Integration'
+                required: [integration]
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v1/org/integrations/{id}:
+    get:
+      summary: Get integration connection
+      operationId: getIntegration
+      security:
+        - sanctum: []
+      parameters:
+        - name: X-Organization-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Organization ID
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Integration ID
+      responses:
+        '200':
+          description: Integration connection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  integration:
+                    $ref: '#/components/schemas/Integration'
+                required: [integration]
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v1/org/integrations/{id}/config:
+    put:
+      summary: Update integration config
+      operationId: updateIntegration
+      security:
+        - sanctum: []
+      parameters:
+        - name: X-Organization-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Organization ID
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Integration ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                config:
+                  type: object
+      responses:
+        '200':
+          description: Integration updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  integration:
+                    $ref: '#/components/schemas/Integration'
+                required: [integration]
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v1/org/integrations/{id}/secrets:
+    put:
+      summary: Update integration secrets (write-only)
+      operationId: updateIntegrationSecrets
+      security:
+        - sanctum: []
+      parameters:
+        - name: X-Organization-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Organization ID
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Integration ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                secrets:
+                  type: object
+                  additionalProperties:
+                    type: string
+      responses:
+        '200':
+          description: Secrets updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required: [message]
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v1/org/integrations/{id}/test:
+    post:
+      summary: Test integration connection
+      operationId: testIntegration
+      security:
+        - sanctum: []
+      parameters:
+        - name: X-Organization-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Organization ID
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Integration ID
+      responses:
+        '200':
+          description: Test result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                required: [success, message]
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '403':
@@ -1330,3 +1599,32 @@ components:
           type: string
           format: date-time
       required: [id, type, title_key, body_key, created_at]
+    Integration:
+      type: object
+      properties:
+        id:
+          type: string
+          format: ulid
+        type:
+          type: string
+        name:
+          type: string
+        config:
+          type: object
+        status:
+          type: string
+          enum: [active, inactive, error]
+        last_health_check_at:
+          type: string
+          format: date-time
+          nullable: true
+        last_health_check_result:
+          type: object
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required: [id, type, name, config, status, created_at, updated_at]

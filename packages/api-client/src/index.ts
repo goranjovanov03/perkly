@@ -116,3 +116,153 @@ export async function updatePassword(
   if (error) throw error;
   return data!;
 }
+
+export async function getBootstrap(
+  client: ApiClient,
+  orgId?: string
+): Promise<paths['/v1/bootstrap']['get']['responses'][200]['content']['application/json']> {
+  const { data, error } = await client.GET('/v1/bootstrap', {
+    params: { header: orgId ? { 'X-Organization-Id': orgId } : undefined },
+  });
+  if (error) throw error;
+  return data!;
+}
+
+export async function listNotifications(
+  client: ApiClient,
+  orgId: string,
+  cursor?: string,
+  unread?: boolean
+): Promise<paths['/v1/org/notifications']['get']['responses'][200]['content']['application/json']> {
+  const { data, error } = await client.GET('/v1/org/notifications', {
+    params: { query: { cursor, unread }, header: { 'X-Organization-Id': orgId } },
+  });
+  if (error) throw error;
+  return data!;
+}
+
+export async function markNotificationAsRead(
+  client: ApiClient,
+  orgId: string,
+  id: string
+): Promise<void> {
+  const { error } = await client.POST('/v1/org/notifications/{id}/read', {
+    params: { path: { id }, header: { 'X-Organization-Id': orgId } },
+  });
+  if (error) throw error;
+}
+
+export async function markAllNotificationsAsRead(
+  client: ApiClient,
+  orgId: string
+): Promise<void> {
+  const { error } = await client.POST('/v1/org/notifications/read-all', {
+    params: { header: { 'X-Organization-Id': orgId } },
+  });
+  if (error) throw error;
+}
+
+export async function getNotificationPreferences(
+  client: ApiClient
+): Promise<paths['/v1/me/notification-preferences']['get']['responses'][200]['content']['application/json']> {
+  const { data, error } = await client.GET('/v1/me/notification-preferences');
+  if (error) throw error;
+  return data!;
+}
+
+export async function updateNotificationPreferences(
+  client: ApiClient,
+  preferences: paths['/v1/me/notification-preferences']['put']['requestBody']['content']['application/json']['preferences']
+): Promise<paths['/v1/me/notification-preferences']['put']['responses'][200]['content']['application/json']> {
+  const { data, error } = await client.PUT('/v1/me/notification-preferences', {
+    body: { preferences },
+  });
+  if (error) throw error;
+  return data!;
+}
+
+export async function updateLocale(
+  client: ApiClient,
+  locale: 'mk' | 'en'
+): Promise<paths['/v1/me/locale']['patch']['responses'][200]['content']['application/json']> {
+  const { data, error } = await client.PATCH('/v1/me/locale', {
+    body: { locale },
+  });
+  if (error) throw error;
+  return data!;
+}
+
+export async function listIntegrations(
+  client: ApiClient,
+  orgId: string
+): Promise<paths['/v1/org/integrations']['get']['responses'][200]['content']['application/json']> {
+  const { data, error } = await client.GET('/v1/org/integrations', {
+    params: { header: { 'X-Organization-Id': orgId } },
+  });
+  if (error) throw error;
+  return data!;
+}
+
+export async function createIntegration(
+  client: ApiClient,
+  orgId: string,
+  body: paths['/v1/org/integrations']['post']['requestBody']['content']['application/json']
+): Promise<paths['/v1/org/integrations']['post']['responses'][201]['content']['application/json']> {
+  const { data, error } = await client.POST('/v1/org/integrations', {
+    body,
+    params: { header: { 'X-Organization-Id': orgId } },
+  });
+  if (error) throw error;
+  return data!;
+}
+
+export async function updateIntegration(
+  client: ApiClient,
+  orgId: string,
+  id: string,
+  body: paths['/v1/org/integrations/{id}/config']['put']['requestBody']['content']['application/json']
+): Promise<paths['/v1/org/integrations/{id}/config']['put']['responses'][200]['content']['application/json']> {
+  const { data, error } = await client.PUT('/v1/org/integrations/{id}/config', {
+    params: { path: { id }, header: { 'X-Organization-Id': orgId } },
+    body,
+  });
+  if (error) throw error;
+  return data!;
+}
+
+export async function getIntegration(
+  client: ApiClient,
+  orgId: string,
+  id: string
+): Promise<paths['/v1/org/integrations/{id}']['get']['responses'][200]['content']['application/json']> {
+  const { data, error } = await client.GET('/v1/org/integrations/{id}', {
+    params: { path: { id }, header: { 'X-Organization-Id': orgId } },
+  });
+  if (error) throw error;
+  return data!;
+}
+
+export async function testIntegration(
+  client: ApiClient,
+  orgId: string,
+  id: string
+): Promise<paths['/v1/org/integrations/{id}/test']['post']['responses'][200]['content']['application/json']> {
+  const { data, error } = await client.POST('/v1/org/integrations/{id}/test', {
+    params: { path: { id }, header: { 'X-Organization-Id': orgId } },
+  });
+  if (error) throw error;
+  return data!;
+}
+
+export async function updateIntegrationSecrets(
+  client: ApiClient,
+  orgId: string,
+  id: string,
+  secrets: Record<string, string>
+): Promise<void> {
+  const { error } = await client.PUT('/v1/org/integrations/{id}/secrets', {
+    params: { path: { id }, header: { 'X-Organization-Id': orgId } },
+    body: { secrets },
+  });
+  if (error) throw error;
+}
