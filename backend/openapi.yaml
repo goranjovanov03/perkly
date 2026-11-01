@@ -557,6 +557,185 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '500':
           $ref: '#/components/responses/ServerError'
+  /v1/org/files:
+    post:
+      summary: Upload a file
+      operationId: uploadFile
+      security:
+        - sanctum: []
+      parameters:
+        - name: X-Organization-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Organization ID
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: File to upload (max 10 MB, allowed types: PDF, PNG, JPG, WebP)
+      responses:
+        '201':
+          description: File uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  file:
+                    $ref: '#/components/schemas/FileResponse'
+                required: [file]
+              example:
+                file:
+                  id: "01HX7Z9K9V9V9V9V9V9V9V9V9V"
+                  original_name: "document.pdf"
+                  mime_type: "application/pdf"
+                  size_bytes: 102400
+                  sha256_hash: "a1b2c3d4e5f6..."
+                  created_at: "2026-11-01T12:00:00.000000Z"
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    get:
+      summary: List organization files
+      operationId: listFiles
+      security:
+        - sanctum: []
+      parameters:
+        - name: X-Organization-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Organization ID
+      responses:
+        '200':
+          description: List of files
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  files:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FileListItem'
+                required: [files]
+              example:
+                files:
+                  - id: "01HX7Z9K9V9V9V9V9V9V9V9V9V"
+                    original_name: "document.pdf"
+                    mime_type: "application/pdf"
+                    size_bytes: 102400
+                    sha256_hash: "a1b2c3d4e5f6..."
+                    created_at: "2026-11-01T12:00:00.000000Z"
+                    uploader:
+                      id: "01HX7Z9K9V9V9V9V9V9V9V9V9V"
+                      name: "John Doe"
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v1/org/files/{file}:
+    get:
+      summary: Get file metadata with download URL
+      operationId: getFile
+      security:
+        - sanctum: []
+      parameters:
+        - name: X-Organization-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Organization ID
+        - name: file
+          in: path
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: File ID
+      responses:
+        '200':
+          description: File metadata with signed download URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  file:
+                    $ref: '#/components/schemas/FileDetail'
+                required: [file]
+              example:
+                file:
+                  id: "01HX7Z9K9V9V9V9V9V9V9V9V9V"
+                  original_name: "document.pdf"
+                  mime_type: "application/pdf"
+                  size_bytes: 102400
+                  sha256_hash: "a1b2c3d4e5f6..."
+                  created_at: "2026-11-01T12:00:00.000000Z"
+                  uploader:
+                    id: "01HX7Z9K9V9V9V9V9V9V9V9V9V"
+                    name: "John Doe"
+                  download_url: "http://localhost/api/v1/files/download/01HX7Z9K9V9V9V9V9V9V9V9V9V?expires=...&signature=..."
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v1/files/download/{file}:
+    get:
+      summary: Download file via signed URL
+      operationId: downloadFile
+      security:
+        - sanctum: []
+      parameters:
+        - name: file
+          in: path
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: File ID
+      responses:
+        '200':
+          description: File stream
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
 components:
   securitySchemes:
     sanctum:
@@ -752,3 +931,45 @@ components:
           items:
             type: string
       required: [user, organizations, locales, default_locale, features, capabilities]
+    FileResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: ulid
+        original_name:
+          type: string
+        mime_type:
+          type: string
+          enum: [application/pdf, image/png, image/jpeg, image/webp]
+        size_bytes:
+          type: integer
+        sha256_hash:
+          type: string
+          pattern: '^[a-f0-9]{64}$'
+        created_at:
+          type: string
+          format: date-time
+      required: [id, original_name, mime_type, size_bytes, sha256_hash, created_at]
+    FileListItem:
+      allOf:
+        - $ref: '#/components/schemas/FileResponse'
+        - type: object
+          properties:
+            uploader:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: ulid
+                name:
+                  type: string
+              required: [id, name]
+    FileDetail:
+      allOf:
+        - $ref: '#/components/schemas/FileListItem'
+        - type: object
+          properties:
+            download_url:
+              type: string
+              format: uri

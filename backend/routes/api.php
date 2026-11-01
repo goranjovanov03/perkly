@@ -43,8 +43,19 @@ Route::prefix('v1')->group(function () {
             Route::get('/current', [\App\Http\Controllers\Api\V1\OrganizationController::class, 'show']);
             Route::patch('/current', [\App\Http\Controllers\Api\V1\OrganizationController::class, 'update']);
             Route::get('/members', [\App\Http\Controllers\Api\V1\OrganizationController::class, 'members']);
+            Route::post('/files', [\App\Http\Controllers\Api\V1\FileController::class, 'store']);
+            Route::get('/files', [\App\Http\Controllers\Api\V1\FileController::class, 'index']);
+            Route::get('/files/{file}', [\App\Http\Controllers\Api\V1\FileController::class, 'show']);
         });
 });
+
+Route::middleware([\App\Http\Middleware\AuthenticateApi::class])
+    ->prefix('files')
+    ->group(function () {
+        Route::get('/download/{file}', [\App\Http\Controllers\Api\V1\FileController::class, 'download'])
+            ->name('files.download')
+            ->middleware('signed');
+    });
 
 Route::get('/user', function (Request $request) {
     return $request->user();

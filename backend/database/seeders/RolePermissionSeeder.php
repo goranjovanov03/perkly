@@ -17,6 +17,8 @@ class RolePermissionSeeder extends Seeder
             'organization.update',
             'members.view',
             'members.manage',
+            'files.upload',
+            'files.view',
         ];
 
         $Permission = app(config('permission.models.permission'));
@@ -51,7 +53,6 @@ class RolePermissionSeeder extends Seeder
                 ['id' => (string) Str::ulid()]
             );
 
-            // Use raw DB to avoid any ID casting issues
             foreach ($permissionIds[$guard] as $permId) {
                 DB::table('role_has_permissions')->insert([
                     'permission_id' => $permId,
@@ -59,7 +60,7 @@ class RolePermissionSeeder extends Seeder
                 ]);
             }
 
-            $adminPerms = $Permission::whereIn('name', ['organization.view', 'members.view', 'members.manage'])->where('guard_name', $guard)->pluck('id')->toArray();
+            $adminPerms = $Permission::whereIn('name', ['organization.view', 'members.view', 'members.manage', 'files.upload', 'files.view'])->where('guard_name', $guard)->pluck('id')->toArray();
             foreach ($adminPerms as $permId) {
                 DB::table('role_has_permissions')->insert([
                     'permission_id' => $permId,
@@ -67,7 +68,7 @@ class RolePermissionSeeder extends Seeder
                 ]);
             }
 
-            $memberPerms = $Permission::whereIn('name', ['organization.view', 'members.view'])->where('guard_name', $guard)->pluck('id')->toArray();
+            $memberPerms = $Permission::whereIn('name', ['organization.view', 'members.view', 'files.view'])->where('guard_name', $guard)->pluck('id')->toArray();
             foreach ($memberPerms as $permId) {
                 DB::table('role_has_permissions')->insert([
                     'permission_id' => $permId,
