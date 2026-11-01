@@ -47,9 +47,12 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $user = Auth::guard('web')->user();
+        $user = $request->user();
         if ($user) {
             audit('auth.logout', 'user', $user->id);
+            \App\Models\DeviceInstallation::where('user_id', $user->id)
+                ->whereNull('revoked_at')
+                ->update(['revoked_at' => now()]);
         }
 
         Auth::guard('web')->logout();

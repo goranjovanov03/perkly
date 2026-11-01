@@ -2,20 +2,21 @@
 
 namespace App\Providers;
 
+use App\Services\Notifications\EmailSender;
+use App\Services\Notifications\LogEmailSender;
+use App\Services\Notifications\LogPushSender;
+use App\Services\Notifications\NotificationDispatcher;
+use App\Services\Notifications\PushSender;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        // console
+        $this->app->bind(PushSender::class, LogPushSender::class);
+        $this->app->bind(EmailSender::class, LogEmailSender::class);
+        $this->app->singleton(NotificationDispatcher::class);
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void {}
 }

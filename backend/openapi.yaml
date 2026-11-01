@@ -384,6 +384,165 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '500':
           $ref: '#/components/responses/ServerError'
+  /v1/me/notification-preferences:
+    get:
+      summary: Get notification preferences
+      operationId: getNotificationPreferences
+      security:
+        - sanctum: []
+      responses:
+        '200':
+          description: Notification preferences
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  preferences:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      additionalProperties:
+                        type: boolean
+                required: [preferences]
+              example:
+                preferences:
+                  in_app:
+                    notification.test: true
+                  push:
+                    notification.test: true
+                  email:
+                    notification.test: false
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    put:
+      summary: Update notification preferences
+      operationId: updateNotificationPreferences
+      security:
+        - sanctum: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - preferences
+              properties:
+                preferences:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - channel
+                      - type
+                      - enabled
+                    properties:
+                      channel:
+                        type: string
+                        enum: [in_app, push, email]
+                      type:
+                        type: string
+                      enabled:
+                        type: boolean
+      responses:
+        '200':
+          description: Updated preferences
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  preferences:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      additionalProperties:
+                        type: boolean
+                required: [preferences]
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v1/me/devices:
+    post:
+      summary: Register or update device installation
+      operationId: registerDevice
+      security:
+        - sanctum: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - platform
+                - push_token
+              properties:
+                platform:
+                  type: string
+                  enum: [android, ios]
+                push_token:
+                  type: string
+                  maxLength: 500
+                app_version:
+                  type: string
+                  maxLength: 50
+                locale:
+                  type: string
+                  enum: [mk, en]
+      responses:
+        '201':
+          description: Device registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  installation:
+                    $ref: '#/components/schemas/DeviceInstallation'
+                required: [installation]
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v1/me/devices/{id}:
+    delete:
+      summary: Revoke device installation
+      operationId: revokeDevice
+      security:
+        - sanctum: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: ulid
+      responses:
+        '200':
+          description: Device revoked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required: [message]
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
   /v1/bootstrap:
     get:
       summary: Get bootstrap data
@@ -706,6 +865,142 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/ServerError'
+  /v1/org/notifications:
+    get:
+      summary: List notifications with cursor pagination
+      operationId: listNotifications
+      security:
+        - sanctum: []
+      parameters:
+        - name: X-Organization-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Organization ID
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: Cursor for pagination (created_at of last item)
+        - name: unread
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filter to unread notifications only
+      responses:
+        '200':
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+                  next_cursor:
+                    type: string
+                    format: date-time
+                    nullable: true
+                required: [notifications]
+              example:
+                notifications:
+                  - id: "01HX7Z9K9V9V9V9V9V9V9V9V9V"
+                    type: "notification.test"
+                    title_key: "notification.test.title"
+                    title_params:
+                      name: "John"
+                    body_key: "notification.test.body"
+                    body_params:
+                      name: "John"
+                    data:
+                      target_type: "test"
+                      target_id: "01HX7Z9K9V9V9V9V9V9V9V9V9V"
+                    read_at: null
+                    created_at: "2026-11-01T12:00:00.000000Z"
+                next_cursor: "2026-11-01T11:00:00.000000Z"
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      summary: Mark all notifications as read
+      operationId: markAllNotificationsAsRead
+      security:
+        - sanctum: []
+      parameters:
+        - name: X-Organization-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Organization ID
+      responses:
+        '200':
+          description: All notifications marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required: [message]
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v1/org/notifications/{id}/read:
+    post:
+      summary: Mark notification as read
+      operationId: markNotificationAsRead
+      security:
+        - sanctum: []
+      parameters:
+        - name: X-Organization-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Organization ID
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: ulid
+          description: Notification ID
+      responses:
+        '200':
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required: [message]
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
   /v1/files/download/{file}:
     get:
       summary: Download file via signed URL
@@ -973,3 +1268,64 @@ components:
             download_url:
               type: string
               format: uri
+    DeviceInstallation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: ulid
+        platform:
+          type: string
+          enum: [android, ios]
+        push_token:
+          type: string
+        app_version:
+          type: string
+          nullable: true
+        locale:
+          type: string
+          enum: [mk, en]
+        last_seen_at:
+          type: string
+          format: date-time
+          nullable: true
+        revoked_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+      required: [id, platform, push_token, locale, created_at]
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: ulid
+        type:
+          type: string
+        title_key:
+          type: string
+        title_params:
+          type: object
+          additionalProperties: true
+          nullable: true
+        body_key:
+          type: string
+        body_params:
+          type: object
+          additionalProperties: true
+          nullable: true
+        data:
+          type: object
+          additionalProperties: true
+          nullable: true
+        read_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+      required: [id, type, title_key, body_key, created_at]

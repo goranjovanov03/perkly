@@ -24,6 +24,14 @@ Route::prefix('v1')->group(function () {
         Route::post('/me/onboarding/complete', [\App\Http\Controllers\AuthController::class, 'completeOnboarding']);
         Route::patch('/me/password', [\App\Http\Controllers\AuthController::class, 'updatePassword']);
         Route::patch('/me/locale', [\App\Http\Controllers\AuthController::class, 'updateLocale']);
+
+        Route::post('/me/devices', [\App\Http\Controllers\Api\V1\DeviceInstallationController::class, 'store']);
+        Route::delete('/me/devices/{id}', [\App\Http\Controllers\Api\V1\DeviceInstallationController::class, 'destroy']);
+    });
+
+    Route::middleware([\App\Http\Middleware\AuthenticateApi::class, \Illuminate\Session\Middleware\StartSession::class, \App\Http\Middleware\CurrentOrganizationMiddleware::class])->group(function () {
+        Route::get('/me/notification-preferences', [\App\Http\Controllers\Api\V1\NotificationPreferenceController::class, 'index']);
+        Route::put('/me/notification-preferences', [\App\Http\Controllers\Api\V1\NotificationPreferenceController::class, 'update']);
     });
 
     Route::middleware([\App\Http\Middleware\AuthenticateApi::class])->group(function () {
@@ -46,6 +54,10 @@ Route::prefix('v1')->group(function () {
             Route::post('/files', [\App\Http\Controllers\Api\V1\FileController::class, 'store']);
             Route::get('/files', [\App\Http\Controllers\Api\V1\FileController::class, 'index']);
             Route::get('/files/{file}', [\App\Http\Controllers\Api\V1\FileController::class, 'show']);
+
+            Route::get('/notifications', [\App\Http\Controllers\Api\V1\NotificationController::class, 'index']);
+            Route::post('/notifications/{id}/read', [\App\Http\Controllers\Api\V1\NotificationController::class, 'markAsRead']);
+            Route::post('/notifications/read-all', [\App\Http\Controllers\Api\V1\NotificationController::class, 'markAllAsRead']);
         });
 });
 
