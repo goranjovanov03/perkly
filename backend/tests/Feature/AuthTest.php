@@ -93,28 +93,66 @@ class AuthTest extends TestCase
         $response->assertStatus(200);
 
         $cookies = $response->headers->getCookies();
+        $sessionCookieName = config('session.cookie');
         $sessionCookie = null;
         foreach ($cookies as $cookie) {
-            if (str_starts_with($cookie->getName(), 'perkly-session') || str_starts_with($cookie->getName(), 'laravel_session') || str_starts_with($cookie->getName(), 'SESSION')) {
+            if ($cookie->getName() === $sessionCookieName) {
                 $sessionCookie = $cookie;
                 break;
             }
         }
 
-        if ($sessionCookie) {
-            $logoutResponse = $this->withHeaders([
-                'X-Requested-With' => 'XMLHttpRequest',
-            ])->withCookie($sessionCookie->getName(), $sessionCookie->getValue())
-                ->postJson('/api/v1/auth/logout');
+        $this->assertNotNull($sessionCookie, 'Session cookie not found in response');
 
-            $logoutResponse->assertStatus(200);
+        $controller = new \App\Http\Controllers\AuthController();
 
-            // In tests, session termination doesn't run, so cookie clearing and session invalidation
-            // are not fully testable. Verify logout endpoint responds successfully.
-            $this->assertTrue(true);
+        $logoutRequest = \Illuminate\Http\Request::create('/api/v1/auth/logout', 'POST', [], [
+            'Cookie' => $sessionCookieName . '=' . $sessionCookie->getValue(),
+        ], [], [
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
+        ]);
+
+        $logoutRequest->setLaravelSession(app('session')->driver());
+        $logoutRequest->session()->setId($sessionCookie->getValue());
+
+        $logoutResponse = $controller->logout($logoutRequest);
+
+        $this->assertEquals(200, $logoutResponse->getStatusCode());
+
+        $setCookieHeader = $logoutResponse->headers->get('Set-Cookie');
+        $this->assertNotEmpty($setCookieHeader, 'No Set-Cookie header in logout response');
+
+        $foundExpiredCookie = false;
+        if (is_array($setCookieHeader)) {
+            foreach ($setCookieHeader as $header) {
+                if (str_starts_with($header, $sessionCookieName . '=') && str_contains($header, 'expires=') && (str_contains($header, 'Max-Age=0') || str_contains($header, 'Max-Age=-'))) {
+                    $foundExpiredCookie = true;
+                    break;
+                }
+            }
         } else {
-            $this->markTestSkipped('No session cookie returned. Cookies: ' . json_encode(array_map(fn($c) => $c->getName(), $cookies)));
+            $header = $setCookieHeader;
+            if (str_starts_with($header, $sessionCookieName . '=') && str_contains($header, 'expires=') && (str_contains($header, 'Max-Age=0') || str_contains($header, 'Max-Age=-'))) {
+                $foundExpiredCookie = true;
+            }
         }
+
+        $this->assertTrue($foundExpiredCookie, 'Logout did not set expired session cookie');
+
+        $app = $this->app;
+        $kernel = $app->make(\Illuminate\Contracts\Http\Kernel::class);
+
+        $meRequest = \Illuminate\Http\Request::create('/api/v1/me', 'GET', [], [
+            'Cookie' => $sessionCookieName . '=' . $sessionCookie->getValue(),
+        ], [], [
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
+        ]);
+
+        $meResponse = $kernel->handle($meRequest);
+
+        $this->assertEquals(401, $meResponse->getStatusCode());
+        $content = json_decode($meResponse->getContent(), true);
+        $this->assertEquals('UNAUTHENTICATED', $content['error']['code'] ?? null);
     }
 
     public function test_me_requires_auth(): void

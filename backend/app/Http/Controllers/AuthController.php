@@ -49,7 +49,7 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         $response = response()->json(['message' => 'Logged out']);
-        $response->withCookie(cookie('perkly-session', '', -3600));
+        $response->withCookie(cookie(config('session.cookie'), '', -3600));
 
         return $response;
     }
@@ -114,7 +114,7 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         $response = response()->json(['message' => 'Logged out from all devices']);
-        $response->withCookie(cookie('perkly-session', '', -3600));
+        $response->withCookie(cookie(config('session.cookie'), '', -3600));
 
         return $response;
     }
