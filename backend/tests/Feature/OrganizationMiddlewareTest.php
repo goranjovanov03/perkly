@@ -9,6 +9,19 @@ use App\Models\OrganizationMembership;
 
 class OrganizationMiddlewareTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+    }
+
+    protected function assignRoleToUserForOrganization(User $user, string $roleName, Organization $organization): void
+    {
+        $Role = app(config('permission.models.role'));
+        $role = $Role::where('name', $roleName)->where('guard_name', 'sanctum')->first();
+        $user->roles()->attach($role, ['team_id' => $organization->id]);
+    }
+
     public function test_member_gets_200(): void
     {
         $organization = Organization::factory()->create();
@@ -18,6 +31,7 @@ class OrganizationMiddlewareTest extends TestCase
             'organization_id' => $organization->id,
             'status' => 'active',
         ]);
+        $this->assignRoleToUserForOrganization($user, 'member', $organization);
 
         $response = $this->actingAs($user, 'sanctum')
             ->withHeaders(['X-Organization-Id' => $organization->id])

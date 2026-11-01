@@ -12,21 +12,25 @@ class OrganizationPolicy
 {
     use HandlesOrganizationAuthorization;
 
-    public function view(Request $request): Response|bool
+    public function view(User $user): Response|bool
     {
+        $request = request();
+
         if (! $this->hasCurrentOrganization($request)) {
             return false;
         }
 
-        return $request->user()->can('organization.view');
+        return $user->can('organization.view', 'sanctum');
     }
 
-    public function update(Request $request): Response|bool
+    public function update(User $user): Response|bool
     {
+        $request = request();
+
         if (! $this->hasCurrentOrganization($request)) {
             return false;
         }
 
-        return $request->user()->can('organization.update');
+        return $user->can('organization.update', 'sanctum');
     }
 }

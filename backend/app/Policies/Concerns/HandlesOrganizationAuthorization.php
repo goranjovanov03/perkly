@@ -9,9 +9,21 @@ trait HandlesOrganizationAuthorization
 {
     protected function getCurrentOrganization(Request $request): ?Organization
     {
-        return $request->attributes->get('current_organization')
-            ?? $request->get('current_organization')
-            ?? app('current_organization', null);
+        $org = $request->attributes->get('current_organization')
+            ?? $request->get('current_organization');
+
+        if ($org instanceof Organization) {
+            return $org;
+        }
+
+        if (app()->bound('current_organization')) {
+            $org = app('current_organization');
+            if ($org instanceof Organization) {
+                return $org;
+            }
+        }
+
+        return null;
     }
 
     protected function hasCurrentOrganization(Request $request): bool

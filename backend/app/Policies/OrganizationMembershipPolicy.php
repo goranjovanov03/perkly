@@ -11,21 +11,25 @@ class OrganizationMembershipPolicy
 {
     use HandlesOrganizationAuthorization;
 
-    public function viewAny(Request $request): Response|bool
+    public function viewAny(User $user): Response|bool
     {
+        $request = request();
+
         if (! $this->hasCurrentOrganization($request)) {
             return false;
         }
 
-        return $request->user()->can('members.view');
+        return $user->can('members.view', 'sanctum');
     }
 
-    public function manage(Request $request): Response|bool
+    public function manage(User $user): Response|bool
     {
+        $request = request();
+
         if (! $this->hasCurrentOrganization($request)) {
             return false;
         }
 
-        return $request->user()->can('members.manage');
+        return $user->can('members.manage', 'sanctum');
     }
 }

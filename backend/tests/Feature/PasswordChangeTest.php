@@ -217,7 +217,7 @@ $loginResponse = $this->withHeaders([
     {
         $cookies = $response->headers->getCookies();
         foreach ($cookies as $cookie) {
-            if (str_starts_with($cookie->getName(), 'perkly-session') || str_starts_with($cookie->getName(), 'laravel_session') || str_starts_with($cookie->getName(), 'SESSION')) {
+            if (str_starts_with($cookie->getName(), 'perkly_session') || str_starts_with($cookie->getName(), 'laravel_session') || str_starts_with($cookie->getName(), 'SESSION')) {
                 return $cookie;
             }
         }

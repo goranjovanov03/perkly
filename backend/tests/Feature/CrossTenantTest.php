@@ -9,6 +9,18 @@ use App\Models\OrganizationMembership;
 
 class CrossTenantTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+    }
+
+    protected function assignRoleToUserForOrganization(User $user, string $roleName, Organization $organization): void
+    {
+        $Role = app(config('permission.models.role'));
+        $role = $Role::where('name', $roleName)->where('guard_name', 'sanctum')->first();
+        $user->roles()->attach($role, ['team_id' => $organization->id]);
+    }
     public function test_user_of_org_a_with_org_b_header_gets_403_on_org_current(): void
     {
         $organizationA = Organization::factory()->create();
@@ -100,6 +112,7 @@ class CrossTenantTest extends TestCase
             'organization_id' => $organizationA->id,
             'status' => 'active',
         ]);
+        $this->assignRoleToUserForOrganization($user, 'member', $organizationA);
 
         $response = $this->actingAs($user, 'sanctum')
             ->withHeaders(['X-Organization-Id' => $organizationA->id])
