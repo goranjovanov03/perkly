@@ -931,6 +931,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '500':
           $ref: '#/components/responses/ServerError'
+  /v1/org/notifications/read-all:
     post:
       summary: Mark all notifications as read
       operationId: markAllNotificationsAsRead
