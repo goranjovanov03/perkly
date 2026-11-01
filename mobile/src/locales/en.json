@@ -10,5 +10,27 @@
     "switch": "Language",
     "mk": "Македонски",
     "en": "English"
+  },
+  "auth": {
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "deviceName": "Device Name",
+    "loggingIn": "Logging in...",
+    "loginError": "Login Error",
+    "invalidCredentials": "Invalid credentials",
+    "networkError": "No connection to server",
+    "retry": "Try again",
+    "sessionExpired": "Session expired",
+    "logout": "Logout",
+    "logoutAll": "Logout from all devices",
+    "loggingOut": "Logging out...",
+    "selectOrganization": "Select Organization",
+    "organization": "Organization",
+    "organizations": "Organizations",
+    "welcome": "Welcome",
+    "currentOrg": "Current Organization",
+    "switchOrg": "Switch Organization",
+    "confirmLogoutAll": "Are you sure you want to logout from all devices?"
   }
 }

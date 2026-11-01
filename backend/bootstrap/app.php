@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,7 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->api(prepend: [\App\Http\Middleware\RequestIdMiddleware::class]);
+        $middleware->statefulApi();
+        $middleware->api(prepend: [
+            \App\Http\Middleware\RequestIdMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
@@ -64,6 +68,16 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 403);
             }
 
+            if ($e instanceof TooManyRequestsHttpException) {
+                return response()->json([
+                    'error' => [
+                        'code' => 'TOO_MANY_REQUESTS',
+                        'message' => 'Too many requests.',
+                        'request_id' => $requestId,
+                    ],
+                ], 429);
+            }
+
             if ($e instanceof NotFoundHttpException) {
                 return response()->json([
                     'error' => [
@@ -91,5 +105,17 @@ return Application::configure(basePath: dirname(__DIR__))
                     'request_id' => $requestId,
                 ],
             ], 500);
+        });
+
+        $exceptions->render(function (AuthenticationException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'error' => [
+                        'code' => 'UNAUTHENTICATED',
+                        'message' => 'Unauthenticated.',
+                        'request_id' => $request->header('X-Request-Id') ?? (string) \Illuminate\Support\Str::uuid(),
+                    ],
+                ], 401);
+            }
         });
     })->create();
