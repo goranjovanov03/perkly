@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Person;
 use App\Models\Organization;
@@ -78,11 +79,27 @@ class DemoSeeder extends Seeder
 
         app(PermissionRegistrar::class)->setPermissionsTeamId($org1->id);
         $ownerRole = $Role::where('name', 'owner')->where('guard_name', 'web')->first();
-        $user->roles()->attach($ownerRole, ['team_id' => $org1->id]);
+        $hasOwnerRole = DB::table('model_has_roles')
+            ->where('model_id', $user->id)
+            ->where('model_type', User::class)
+            ->where('role_id', $ownerRole->id)
+            ->where('team_id', $org1->id)
+            ->exists();
+        if (! $hasOwnerRole) {
+            $user->roles()->attach($ownerRole, ['team_id' => $org1->id]);
+        }
 
         app(PermissionRegistrar::class)->setPermissionsTeamId($org2->id);
         $memberRole = $Role::where('name', 'member')->where('guard_name', 'web')->first();
-        $user->roles()->attach($memberRole, ['team_id' => $org2->id]);
+        $hasMemberRole = DB::table('model_has_roles')
+            ->where('model_id', $user->id)
+            ->where('model_type', User::class)
+            ->where('role_id', $memberRole->id)
+            ->where('team_id', $org2->id)
+            ->exists();
+        if (! $hasMemberRole) {
+            $user->roles()->attach($memberRole, ['team_id' => $org2->id]);
+        }
 
         app(PermissionRegistrar::class)->setPermissionsTeamId(null);
     }

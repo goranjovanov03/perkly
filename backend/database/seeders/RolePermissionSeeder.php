@@ -29,55 +29,34 @@ class RolePermissionSeeder extends Seeder
 
         $guards = ['web', 'sanctum'];
 
-        $permissionIds = [];
-        foreach ($permissionNames as $permission) {
-            foreach ($guards as $guard) {
-                $perm = $Permission::firstOrCreate(
+        foreach ($guards as $guard) {
+            $permissionModels = [];
+            foreach ($permissionNames as $permission) {
+                $permissionModels[] = $Permission::firstOrCreate(
                     ['name' => $permission, 'guard_name' => $guard],
                     ['id' => (string) Str::ulid()]
                 );
-                $permissionIds[$guard][] = $perm->id;
             }
-        }
 
-        foreach ($guards as $guard) {
             $owner = $Role::firstOrCreate(
                 ['name' => 'owner', 'guard_name' => $guard],
                 ['id' => (string) Str::ulid()]
             );
+            $owner->syncPermissions($permissionModels);
 
             $admin = $Role::firstOrCreate(
                 ['name' => 'admin', 'guard_name' => $guard],
                 ['id' => (string) Str::ulid()]
             );
+            $adminPermissions = $Permission::whereIn('name', ['organization.view', 'members.view', 'members.manage', 'files.upload', 'files.view', 'notifications.view', 'notifications.preferences', 'integrations.manage'])->where('guard_name', $guard)->get();
+            $admin->syncPermissions($adminPermissions);
 
             $member = $Role::firstOrCreate(
                 ['name' => 'member', 'guard_name' => $guard],
                 ['id' => (string) Str::ulid()]
             );
-
-            foreach ($permissionIds[$guard] as $permId) {
-                DB::table('role_has_permissions')->insert([
-                    'permission_id' => $permId,
-                    'role_id' => $owner->id,
-                ]);
-            }
-
-            $adminPerms = $Permission::whereIn('name', ['organization.view', 'members.view', 'members.manage', 'files.upload', 'files.view', 'notifications.view', 'notifications.preferences', 'integrations.manage'])->where('guard_name', $guard)->pluck('id')->toArray();
-            foreach ($adminPerms as $permId) {
-                DB::table('role_has_permissions')->insert([
-                    'permission_id' => $permId,
-                    'role_id' => $admin->id,
-                ]);
-            }
-
-            $memberPerms = $Permission::whereIn('name', ['organization.view', 'members.view', 'files.view', 'notifications.view', 'notifications.preferences'])->where('guard_name', $guard)->pluck('id')->toArray();
-            foreach ($memberPerms as $permId) {
-                DB::table('role_has_permissions')->insert([
-                    'permission_id' => $permId,
-                    'role_id' => $member->id,
-                ]);
-            }
+            $memberPermissions = $Permission::whereIn('name', ['organization.view', 'members.view', 'files.view', 'notifications.view', 'notifications.preferences'])->where('guard_name', $guard)->get();
+            $member->syncPermissions($memberPermissions);
         }
     }
 }

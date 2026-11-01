@@ -490,15 +490,18 @@ class IntegrationTest extends TestCase
             'name' => 'Test Stripe',
         ]);
 
-        $this->actingAs($user, 'sanctum')
+        $response = $this->actingAs($user, 'sanctum')
             ->withHeaders(['X-Organization-Id' => $organization->id])
             ->putJson("/api/v1/org/integrations/{$connection->id}/secrets", [
                 'secrets' => ['api_key' => 'sk_test_123', 'webhook_secret' => 'whsec_123'],
             ]);
 
-        $logs = \Illuminate\Support\Facades\Log::channel('stack')->getLogs();
-        $logContent = json_encode($logs);
-        $this->assertStringNotContainsString('sk_test_123', $logContent);
-        $this->assertStringNotContainsString('whsec_123', $logContent);
+        $this->assertStringNotContainsString('sk_test_123', $response->getContent());
+        $this->assertStringNotContainsString('whsec_123', $response->getContent());
+
+        $audit = \App\Models\AuditLog::where('action', 'integration.secrets_updated')->first();
+        $this->assertNotNull($audit);
+        $this->assertArrayNotHasKey('sk_test_123', $audit->metadata ?? []);
+        $this->assertArrayNotHasKey('whsec_123', $audit->metadata ?? []);
     }
 }

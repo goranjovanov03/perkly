@@ -101,7 +101,7 @@ class IntegrationController extends Controller
             'created_by' => $request->user()->id,
         ]);
 
-        $this->audit('integration.created', 'integration_connection', $connection->id, [
+        audit('integration.created', 'integration_connection', $connection->id, [
             'provider_key' => $provider->key,
             'name' => $connection->name,
         ]);
@@ -184,7 +184,7 @@ class IntegrationController extends Controller
             );
         }
 
-        $this->audit('integration.secrets_updated', 'integration_connection', $connection->id, [
+        audit('integration.secrets_updated', 'integration_connection', $connection->id, [
             'secret_keys' => array_keys($request->secrets),
         ]);
 
@@ -223,7 +223,7 @@ class IntegrationController extends Controller
             'last_health_at' => now(),
         ]);
 
-        $this->audit('integration.tested', 'integration_connection', $connection->id, [
+        audit('integration.tested', 'integration_connection', $connection->id, [
             'success' => $result['success'],
             'message' => $result['message'],
         ]);
@@ -270,7 +270,7 @@ class IntegrationController extends Controller
             'created_by' => $request->user()->id,
         ]);
 
-        $this->audit('integration.config_updated', 'integration_connection', $connection->id, [
+        audit('integration.config_updated', 'integration_connection', $connection->id, [
             'version_number' => $latestVersion + 1,
         ]);
 
