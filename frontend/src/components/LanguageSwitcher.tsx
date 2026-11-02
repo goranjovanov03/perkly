@@ -6,11 +6,14 @@ import { apiClient } from '../lib/api';
 
 export function LanguageSwitcher() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, selectedOrganizationId } = useAuth();
 
   const changeLanguage = async (lng: string) => {
-    if (user) {
-      await updateLocale(apiClient, lng as 'mk' | 'en');
+    if (user && selectedOrganizationId) {
+      try {
+        await updateLocale(apiClient, lng as 'mk' | 'en');
+      } catch {
+      }
     }
     i18n.changeLanguage(lng);
     localStorage.setItem('language', lng);

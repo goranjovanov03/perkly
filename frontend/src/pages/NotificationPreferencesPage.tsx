@@ -24,11 +24,17 @@ export function NotificationPreferencesPage() {
   const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set());
   const [pendingChanges, setPendingChanges] = useState<Record<string, Record<string, boolean>>>({});
 
-  const { data, isLoading } = useQuery<PreferencesResponse>({
+  const { data, isLoading, error } = useQuery<PreferencesResponse>({
     queryKey: ['notification-preferences'],
     queryFn: () => getNotificationPreferences(apiClient),
     staleTime: 60000,
+    throwOnError: false,
+    retry: false,
   });
+
+  if (error) {
+    return <div style={styles.error}>{t('notifications.bellError')}</div>;
+  }
 
   const updateMutation = useMutation({
     mutationFn: (preferences: Array<{ channel: Channel; type: string; enabled: boolean }>) => 
@@ -307,5 +313,10 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign: 'center',
     padding: '3rem',
     color: '#999',
+  },
+  error: {
+    textAlign: 'center',
+    padding: '3rem',
+    color: '#dc3545',
   },
 };

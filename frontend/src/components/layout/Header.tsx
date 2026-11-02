@@ -4,22 +4,42 @@ import { LanguageSwitcher } from '../LanguageSwitcher';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../lib/api';
 import { listNotifications } from '@perkly/api-client';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ApiError } from '@perkly/api-client';
+import { useEffect } from 'react';
 
 export function Header() {
   const { t } = useTranslation();
   const { user, currentOrganization, logout, selectedOrganizationId, capabilities } = useAuth();
+  const navigate = useNavigate();
 
-  const { data: unreadCount } = useQuery<number>({
+  const { data: unreadCount, error: bellError, isError } = useQuery<number>({
     queryKey: ['notifications-unread', selectedOrganizationId],
     queryFn: async () => {
-      const res = await listNotifications(apiClient, selectedOrganizationId!, undefined, true);
+      if (!selectedOrganizationId) {
+        throw new Error('No organization selected');
+      }
+      const res = await listNotifications(apiClient, selectedOrganizationId, undefined, true);
       return res.notifications.filter((n: { read_at: string | null }) => !n.read_at).length;
     },
     enabled: !!selectedOrganizationId && capabilities.includes('notifications.view'),
     refetchInterval: 30000,
     staleTime: 30000,
+    throwOnError: false,
+    retry: false,
   });
+
+  useEffect(() => {
+    if (isError && bellError) {
+      if (bellError instanceof ApiError) {
+        if (bellError.code === 'UNAUTHENTICATED' || bellError.status === 401) {
+          navigate('/login', { replace: true });
+        } else if (bellError.code === 'FORBIDDEN' || bellError.status === 403) {
+          navigate('/organization-picker', { replace: true });
+        }
+      }
+    }
+  }, [isError, bellError, navigate]);
 
   const hasNotifications = capabilities.includes('notifications.view');
 
@@ -29,13 +49,16 @@ export function Header() {
         <h1 style={styles.title}>{currentOrganization?.name || t('header.appName')}</h1>
       </div>
       <div style={styles.right}>
-        {hasNotifications && (
+        {hasNotifications && selectedOrganizationId && (
           <Link to="/notifications" style={styles.notificationBell} aria-label={t('notifications.title')}>
             <span style={styles.bellIcon}>🔔</span>
             {unreadCount && unreadCount > 0 && (
               <span style={styles.badge}>{unreadCount > 99 ? '99+' : unreadCount}</span>
             )}
           </Link>
+        )}
+        {isError && hasNotifications && (
+          <span style={styles.bellError}>{t('notifications.bellError')}</span>
         )}
         <LanguageSwitcher />
         <div style={styles.userInfo}>
@@ -111,6 +134,11 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '0 4px',
+  },
+  bellError: {
+    fontSize: '0.75rem',
+    color: '#dc3545',
+    whiteSpace: 'nowrap',
   },
   userInfo: {
     display: 'flex',

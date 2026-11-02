@@ -31,11 +31,17 @@ export function IntegrationsPage() {
 
   const hasManageCapability = capabilities.includes('integrations.manage');
 
-  const { data, isLoading } = useQuery<IntegrationsResponse>({
+  const { data, isLoading, error } = useQuery<IntegrationsResponse>({
     queryKey: ['integrations', selectedOrganizationId],
     queryFn: () => listIntegrations(apiClient, selectedOrganizationId!),
     enabled: !!selectedOrganizationId,
+    throwOnError: false,
+    retry: false,
   });
+
+  if (error) {
+    return <div style={styles.error}>{t('integrations.loadError')}</div>;
+  }
 
   const createMutation = useMutation({
     mutationFn: (body: { type: string; name: string; config: Record<string, unknown> }) => 
@@ -443,6 +449,11 @@ const styles: Record<string, React.CSSProperties> = {
   secretsFields: {
     display: 'flex',
     gap: '0.5rem',
+  },
+  error: {
+    textAlign: 'center',
+    padding: '3rem',
+    color: '#dc3545',
   },
 };
 

@@ -3,6 +3,20 @@ import type { paths } from './schema';
 
 export type ApiClient = Client<paths>;
 
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly code: string,
+    public readonly status: number,
+    public readonly fields?: Record<string, string[]>
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+const ORGANIZATION_STORAGE_KEY = 'selectedOrganizationId';
+
 const acceptJsonMiddleware: Middleware = {
   onRequest: async ({ request }) => {
     request.headers.set('Accept', 'application/json');
@@ -26,10 +40,23 @@ const csrfMiddleware: Middleware = {
   },
 };
 
+const organizationMiddleware: Middleware = {
+  onRequest: async ({ request }) => {
+    if (typeof window !== 'undefined') {
+      const orgId = localStorage.getItem(ORGANIZATION_STORAGE_KEY);
+      if (orgId) {
+        request.headers.set('X-Organization-Id', orgId);
+      }
+    }
+    return request;
+  },
+};
+
 export function createApiClient(baseUrl: string): { client: ApiClient; baseUrl: string } {
   const client = createClient<paths>({ baseUrl, credentials: 'include' });
   client.use(acceptJsonMiddleware);
   client.use(csrfMiddleware);
+  client.use(organizationMiddleware);
   return { client, baseUrl };
 }
 
@@ -47,6 +74,20 @@ export async function ensureCsrfCookie(baseUrl: string): Promise<void> {
   csrfCookieInitialized = true;
 }
 
+function toApiError(error: unknown): ApiError {
+  if (error && typeof error === 'object' && 'error' in error) {
+    const apiError = error as { error?: { code?: string; message?: string; request_id?: string; fields?: Record<string, string[]> } };
+    const err = apiError.error;
+    return new ApiError(
+      err?.message || 'API Error',
+      err?.code || 'UNKNOWN_ERROR',
+      0,
+      err?.fields
+    );
+  }
+  return new ApiError('Unknown error', 'UNKNOWN_ERROR', 0);
+}
+
 export async function login(
   client: ApiClient,
   baseUrl: string,
@@ -57,20 +98,20 @@ export async function login(
   const { data, error } = await client.POST('/v1/auth/login', {
     body: { email, password },
   });
-  if (error) throw error;
+  if (error) throw toApiError(error);
   return data!;
 }
 
 export async function logout(client: ApiClient, baseUrl: string): Promise<void> {
   await ensureCsrfCookie(baseUrl);
   const { error } = await client.POST('/v1/auth/logout');
-  if (error) throw error;
+  if (error) throw toApiError(error);
 }
 
 export async function logoutAll(client: ApiClient, baseUrl: string): Promise<void> {
   await ensureCsrfCookie(baseUrl);
   const { error } = await client.POST('/v1/auth/logout-all');
-  if (error) throw error;
+  if (error) throw toApiError(error);
 }
 
 export async function forgotPassword(
@@ -82,7 +123,7 @@ export async function forgotPassword(
   const { data, error } = await client.POST('/v1/auth/forgot-password', {
     body: { email },
   });
-  if (error) throw error;
+  if (error) throw toApiError(error);
   return data!;
 }
 
@@ -98,7 +139,7 @@ export async function resetPassword(
   const { data, error } = await client.POST('/v1/auth/reset-password', {
     body: { token, email, password, password_confirmation },
   });
-  if (error) throw error;
+  if (error) throw toApiError(error);
   return data!;
 }
 
@@ -113,7 +154,7 @@ export async function updatePassword(
   const { data, error } = await client.PATCH('/v1/me', {
     body: { current_password, password, password_confirmation },
   });
-  if (error) throw error;
+  if (error) throw toApiError(error);
   return data!;
 }
 
@@ -124,7 +165,7 @@ export async function getBootstrap(
   const { data, error } = await client.GET('/v1/bootstrap', {
     params: { header: orgId ? { 'X-Organization-Id': orgId } : undefined },
   });
-  if (error) throw error;
+  if (error) throw toApiError(error);
   return data!;
 }
 
@@ -135,9 +176,9 @@ export async function listNotifications(
   unread?: boolean
 ): Promise<paths['/v1/org/notifications']['get']['responses'][200]['content']['application/json']> {
   const { data, error } = await client.GET('/v1/org/notifications', {
-    params: { query: { cursor, unread }, header: { 'X-Organization-Id': orgId } },
+    params: { query: { cursor, unread }, header: {} as { 'X-Organization-Id': string } },
   });
-  if (error) throw error;
+  if (error) throw toApiError(error);
   return data!;
 }
 
@@ -147,9 +188,9 @@ export async function markNotificationAsRead(
   id: string
 ): Promise<void> {
   const { error } = await client.POST('/v1/org/notifications/{id}/read', {
-    params: { path: { id }, header: { 'X-Organization-Id': orgId } },
+    params: { path: { id }, header: {} as { 'X-Organization-Id': string } },
   });
-  if (error) throw error;
+  if (error) throw toApiError(error);
 }
 
 export async function markAllNotificationsAsRead(
@@ -157,16 +198,16 @@ export async function markAllNotificationsAsRead(
   orgId: string
 ): Promise<void> {
   const { error } = await client.POST('/v1/org/notifications/read-all', {
-    params: { header: { 'X-Organization-Id': orgId } },
+    params: { header: {} as { 'X-Organization-Id': string } },
   });
-  if (error) throw error;
+  if (error) throw toApiError(error);
 }
 
 export async function getNotificationPreferences(
   client: ApiClient
 ): Promise<paths['/v1/me/notification-preferences']['get']['responses'][200]['content']['application/json']> {
   const { data, error } = await client.GET('/v1/me/notification-preferences');
-  if (error) throw error;
+  if (error) throw toApiError(error);
   return data!;
 }
 
@@ -177,7 +218,7 @@ export async function updateNotificationPreferences(
   const { data, error } = await client.PUT('/v1/me/notification-preferences', {
     body: { preferences },
   });
-  if (error) throw error;
+  if (error) throw toApiError(error);
   return data!;
 }
 
@@ -188,7 +229,7 @@ export async function updateLocale(
   const { data, error } = await client.PATCH('/v1/me/locale', {
     body: { locale },
   });
-  if (error) throw error;
+  if (error) throw toApiError(error);
   return data!;
 }
 
@@ -197,9 +238,9 @@ export async function listIntegrations(
   orgId: string
 ): Promise<paths['/v1/org/integrations']['get']['responses'][200]['content']['application/json']> {
   const { data, error } = await client.GET('/v1/org/integrations', {
-    params: { header: { 'X-Organization-Id': orgId } },
+    params: { header: {} as { 'X-Organization-Id': string } },
   });
-  if (error) throw error;
+  if (error) throw toApiError(error);
   return data!;
 }
 
@@ -210,9 +251,9 @@ export async function createIntegration(
 ): Promise<paths['/v1/org/integrations']['post']['responses'][201]['content']['application/json']> {
   const { data, error } = await client.POST('/v1/org/integrations', {
     body,
-    params: { header: { 'X-Organization-Id': orgId } },
+    params: { header: {} as { 'X-Organization-Id': string } },
   });
-  if (error) throw error;
+  if (error) throw toApiError(error);
   return data!;
 }
 
@@ -223,10 +264,10 @@ export async function updateIntegration(
   body: paths['/v1/org/integrations/{id}/config']['put']['requestBody']['content']['application/json']
 ): Promise<paths['/v1/org/integrations/{id}/config']['put']['responses'][200]['content']['application/json']> {
   const { data, error } = await client.PUT('/v1/org/integrations/{id}/config', {
-    params: { path: { id }, header: { 'X-Organization-Id': orgId } },
+    params: { path: { id }, header: {} as { 'X-Organization-Id': string } },
     body,
   });
-  if (error) throw error;
+  if (error) throw toApiError(error);
   return data!;
 }
 
@@ -236,9 +277,9 @@ export async function getIntegration(
   id: string
 ): Promise<paths['/v1/org/integrations/{id}']['get']['responses'][200]['content']['application/json']> {
   const { data, error } = await client.GET('/v1/org/integrations/{id}', {
-    params: { path: { id }, header: { 'X-Organization-Id': orgId } },
+    params: { path: { id }, header: {} as { 'X-Organization-Id': string } },
   });
-  if (error) throw error;
+  if (error) throw toApiError(error);
   return data!;
 }
 
@@ -248,9 +289,9 @@ export async function testIntegration(
   id: string
 ): Promise<paths['/v1/org/integrations/{id}/test']['post']['responses'][200]['content']['application/json']> {
   const { data, error } = await client.POST('/v1/org/integrations/{id}/test', {
-    params: { path: { id }, header: { 'X-Organization-Id': orgId } },
+    params: { path: { id }, header: {} as { 'X-Organization-Id': string } },
   });
-  if (error) throw error;
+  if (error) throw toApiError(error);
   return data!;
 }
 
@@ -261,8 +302,8 @@ export async function updateIntegrationSecrets(
   secrets: Record<string, string>
 ): Promise<void> {
   const { error } = await client.PUT('/v1/org/integrations/{id}/secrets', {
-    params: { path: { id }, header: { 'X-Organization-Id': orgId } },
+    params: { path: { id }, header: {} as { 'X-Organization-Id': string } },
     body: { secrets },
   });
-  if (error) throw error;
+  if (error) throw toApiError(error);
 }

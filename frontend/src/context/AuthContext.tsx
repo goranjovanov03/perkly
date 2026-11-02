@@ -1,10 +1,10 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getBootstrapData, logout, logoutAll, login as loginApi } from '../services/auth';
-import type { AuthState, LoginCredentials, ApiError } from '../types/auth';
+import { getBootstrapData, logout, logoutAll, login as loginApi, getErrorMessage } from '../services/auth';
+import type { AuthState, LoginCredentials } from '../types/auth';
 import { ORGANIZATION_STORAGE_KEY, SESSION_EXPIRED_KEY } from '../types/auth';
-import { getErrorMessage } from '../services/auth';
-import i18n from '../lib/i18n';
+import { useNavigate } from 'react-router-dom';
+import { ApiError } from '@perkly/api-client';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<{ error?: string; fieldErrors?: Record<string, string[]> }>;
@@ -18,6 +18,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | null>(() => {
     return localStorage.getItem(ORGANIZATION_STORAGE_KEY);
   });
@@ -30,7 +31,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryFn: getBootstrapData,
     retry: false,
     staleTime: Infinity,
+    throwOnError: false,
   });
+
+  useEffect(() => {
+    if (bootstrapError && bootstrapError instanceof ApiError) {
+      if (bootstrapError.code === 'UNAUTHENTICATED') {
+        setSessionExpired(true);
+        localStorage.setItem(SESSION_EXPIRED_KEY, 'true');
+        navigate('/login', { replace: true });
+      } else if (bootstrapError.code === 'FORBIDDEN') {
+        setSelectedOrganizationId(null);
+        localStorage.removeItem(ORGANIZATION_STORAGE_KEY);
+        navigate('/organization-picker', { replace: true });
+      }
+    }
+  }, [bootstrapError, navigate]);
 
   const loginMutation = useMutation({
     mutationFn: loginApi,
@@ -74,26 +90,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [bootstrapData]);
 
-  useEffect(() => {
-    if (bootstrapError) {
-      const errorCode = bootstrapError && typeof bootstrapError === 'object' && 'error' in bootstrapError
-        ? (bootstrapError as ApiError).error?.code
-        : null;
-      
-      if (errorCode === 'UNAUTHENTICATED') {
-        setSessionExpired(true);
-        localStorage.setItem(SESSION_EXPIRED_KEY, 'true');
-      }
-    }
-  }, [bootstrapError]);
-
-  useEffect(() => {
-    if (bootstrapData?.user?.locale && bootstrapData.user.locale !== i18n.language) {
-      i18n.changeLanguage(bootstrapData.user.locale);
-      localStorage.setItem('language', bootstrapData.user.locale);
-    }
-  }, [bootstrapData?.user?.locale]);
-
   const login = useCallback(async (credentials: LoginCredentials) => {
     try {
       await loginMutation.mutateAsync(credentials);
@@ -101,9 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       return {
         error: getErrorMessage(error, 'Login failed'),
-        fieldErrors: error && typeof error === 'object' && 'error' in error 
-          ? (error as ApiError).error?.fields 
-          : undefined,
+        fieldErrors: error instanceof ApiError ? error.fields : undefined,
       };
     }
   }, [loginMutation]);

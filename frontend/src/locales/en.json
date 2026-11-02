@@ -86,6 +86,7 @@
     "loadMore": "Load more",
     "preferences": "Preferences",
     "noPermission": "No permission to view notifications",
+    "bellError": "Unable to load notifications",
     "test": {
       "title": "Test notification",
       "body": "This is a test notification for {{name}}"
@@ -102,6 +103,12 @@
     "preferencesDetail": "Details for type {{type}}",
     "enabled": "Enabled",
     "disabled": "Disabled"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "message": "The application encountered an unexpected error. Please try again.",
+    "details": "Error details",
+    "reload": "Reload page"
   },
   "integrations": {
     "title": "Integrations",
@@ -124,6 +131,7 @@
     "lastHealthCheck": "Last health check",
     "lastResult": "Last result",
     "never": "Never",
+    "loadError": "Unable to load integrations",
     "status": {
       "active": "Active",
       "inactive": "Inactive",

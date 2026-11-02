@@ -37,12 +37,14 @@ export function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const { data, isLoading, isFetching } = useQuery<NotificationsResponse>({
+  const { data, isLoading, isFetching, error } = useQuery<NotificationsResponse>({
     queryKey: ['notifications', selectedOrganizationId, cursor, unreadOnly],
     queryFn: () => listNotifications(apiClient, selectedOrganizationId!, cursor || undefined, unreadOnly),
     enabled: !!selectedOrganizationId,
     staleTime: 30000,
     refetchInterval: 30000,
+    throwOnError: false,
+    retry: false,
   });
 
   const unreadCountQuery = useQuery<NotificationsResponse, Error, number>({
@@ -51,6 +53,8 @@ export function NotificationsPage() {
     enabled: !!selectedOrganizationId,
     refetchInterval: 30000,
     select: (data) => data.notifications.filter(n => !n.read_at).length,
+    throwOnError: false,
+    retry: false,
   });
 
   useEffect(() => {
@@ -108,6 +112,14 @@ export function NotificationsPage() {
 
   if (!selectedOrganizationId) {
     return <div style={styles.empty}>{t('notifications.noOrganization')}</div>;
+  }
+
+  if (error) {
+    return (
+      <div style={styles.error}>
+        {t('notifications.bellError')}
+      </div>
+    );
   }
 
   return (
@@ -316,5 +328,10 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign: 'center',
     padding: '3rem',
     color: '#999',
+  },
+  error: {
+    textAlign: 'center',
+    padding: '3rem',
+    color: '#dc3545',
   },
 };
